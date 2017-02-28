@@ -13,10 +13,11 @@ const size_t GRAY_MEM = HEIGHT * WIDTH * BPP_OUT;
 
 uint8_t lena [COLOR_MEM];
 
-uint8_t output [GRAY_MEM];
-
 //output:
 //grayscale 8BPP
+uint8_t output [GRAY_MEM];
+
+
 
 void loadImage();
 uint8_t GetLuminosityFromRGB(uint8_t r, uint8_t g, uint8_t b);
