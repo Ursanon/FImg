@@ -8,9 +8,6 @@ const size_t BPP_COLOR = 3;
 
 const size_t BPP_OUT = 1;
 
-const size_t COLOR_MEM = HEIGHT * WIDTH * BPP_COLOR;
-const size_t GRAY_MEM = HEIGHT * WIDTH * BPP_OUT; 
-
 uint8_t lena [BPP_COLOR];
 
 //output:
