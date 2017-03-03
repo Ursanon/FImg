@@ -8,11 +8,13 @@ const size_t BPP_COLOR = 3;
 
 const size_t BPP_OUT = 1;
 
+const size_t GRAY_MEM = HEIGHT * WIDTH * BPP_OUT;
+
 uint8_t lena [BPP_COLOR];
 
 //output:
 //grayscale 1BPP
-uint8_t output [BPP_OUT];
+uint8_t output [GRAY_MEM];
 
 uint8_t GetLuminosityFromRGB(uint8_t r, uint8_t g, uint8_t b);
 void convertToGray();
