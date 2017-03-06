@@ -41,7 +41,7 @@ int main()
                 printf("Error with file reading!\n");
             else
             {
-                if(uint8_dr != png_signature[i])
+                if(*uint8_dr != png_signature[i])
                 {
                     is_good = false;
                     break;
