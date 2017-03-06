@@ -12,6 +12,7 @@ void byteswap_uint32(unsigned int &x)
     (x<<24);
 }
 
+
 struct ImageSize {
     uint32_t width;
     uint32_t height;    
@@ -22,13 +23,14 @@ const uint8_t png_signature [] = {137,80,78,71,13,10,26,10};
 int main()
 {
     ImageSize image;
+
     unsigned int uint32_dr [1];
-    uint8_t uint8_dr [1];
+    uint8_t *uint8_dr = new uint8_t;
 
     FILE * f = fopen("lena.png","rb");
     if(f != NULL)
     {
-
+        bool is_good = true;
 ////////////////////
 //PNG signature 
       
@@ -39,14 +41,25 @@ int main()
                 printf("Error with file reading!\n");
             else
             {
-                if()
+                if(uint8_dr != png_signature[i])
+                {
+                    is_good = false;
+                    break;
+                }
             }
                 
         }
 //end of PNG signature
 ////////////////////
+    delete uint8_dr; 
+    
+    if(!is_good)
+    {
+        puts("Wrong PNG signature!");
+        fclose(f);
+    }
 
-        puts("___\nChunks\n___");
+    puts("___\nReading chunks:\n___");
 
 ////////////////////
 //IHDR chunk
@@ -81,36 +94,6 @@ int main()
         printf("Height:%u\n",image.height);
         ////////////////////
 
-
-
-/*
-        uint8_t uint8_dra[4];
-        fread(uint8_dra,sizeof(uint8_t),4,f);
-        for(int i = 3 ;i>-1;--i)
-            printf("%d ",*(uint8_dra+i));
-*/
-/*
-        //img height
-        if(fread(uint8_dr,sizeof(uint8_t),1,f) < 0)
-            printf("error!\n");
-        printf("--\nWidth:0x%X\n",*uint8_dr);
-        
-        //img height
-        if(fread(uint8_dr,sizeof(uint8_t),1,f) < 0)
-            printf("error!\n");
-        printf("--\nWidth:0x%X\n",*uint8_dr);
-
-        //img height
-        if(fread(uint8_dr,sizeof(uint8_t),1,f) < 0)
-            printf("error!\n");
-        printf("--\nWidth:0x%X\n",*uint8_dr);
-
-        //img height
-        if(fread(uint8_dr,sizeof(uint8_t),1,f) < 0)
-            printf("error!\n");
-        printf("--\nWidth:0x%X\n",*uint8_dr);
-*/
-        
 //end of IHDR chunk
 ////////////////////
 
