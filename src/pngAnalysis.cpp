@@ -12,30 +12,35 @@ void byteswap_uint32(unsigned int &x)
     (x<<24);
 }
 
-struct IMG_SIZE {
+struct ImageSize {
     uint32_t width;
     uint32_t height;    
 };
 
+const uint8_t png_signature [] = {137,80,78,71,13,10,26,10};
+
 int main()
 {
-    IMG_SIZE image;
+    ImageSize image;
     unsigned int uint32_dr [1];
     uint8_t uint8_dr [1];
 
     FILE * f = fopen("lena.png","rb");
     if(f != NULL)
     {
+
 ////////////////////
-//PNG signature
-      
+//PNG signature 
       
         for(int i = 0; i < 8;i++)
         {
             //todo: delete magic numbers
             if(fread(uint8_dr,sizeof(uint8_t),1,f) != 1)
-                printf("error!\n");
-            printf("%u\n",*uint8_dr);
+                printf("Error with file reading!\n");
+            else
+            {
+                if()
+            }
                 
         }
 //end of PNG signature
@@ -47,19 +52,20 @@ int main()
 //IHDR chunk
         ////////////////////
         //chunk length        
-        if(fread(uint32_dr,sizeof(unsigned int),1,f) < 0)
-            printf("error!\n");    
+        if(fread(uint32_dr,sizeof(unsigned int),1,f) != 1)
+            printf("Error with file reading!\n");    
         printf("--\nLEN:%u\n",*uint32_dr);
         
         ////////////////////
         //chunk type-code
-        if(fread(uint32_dr,sizeof(unsigned int),1,f) < 0)
-            printf("error!\n");
+        if(fread(uint32_dr,sizeof(unsigned int),1,f) != 1)
+            printf("Error with file reading!\n");
         printf("--\nType:0x%X\n--\n",*uint32_dr);
 
         ////////////////////
         //img width
-        fread(&image.width,sizeof(unsigned int),1,f);
+        if(fread(&image.width,sizeof(unsigned int),1,f) != 1)
+            printf("Error with file reading!\n");
         byteswap_uint32(image.width);
 
         printf("Width:%u\n",image.width);
@@ -68,7 +74,8 @@ int main()
 
         ////////////////////
         //img height
-        fread(&image.height,sizeof(unsigned int),1,f);
+        if(fread(&image.height,sizeof(unsigned int),1,f) != 1)
+            printf("Error with file reading!\n");
         byteswap_uint32(image.height);
 
         printf("Height:%u\n",image.height);
