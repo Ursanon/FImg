@@ -4,4 +4,10 @@ project(FImg)
 
 add_subdirectory(src)
 
-add_executable(FImg ${ALL_SRC})
+foreach(testsrc ${ALL_SRC})
+
+    string(REGEX REPLACE "[a-zA-Z:+]*/" "" NAME ${testsrc})
+    string(REPLACE ".cpp" "" NAME ${NAME})
+    message(${NAME})
+    add_executable(${NAME} ${testsrc})
+endforeach(testsrc ${ALL_SRC})
