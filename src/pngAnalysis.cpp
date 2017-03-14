@@ -27,7 +27,7 @@ int main()
     unsigned int uint32_dr [1];
     uint8_t *uint8_dr = new uint8_t;
 
-    FILE * f = fopen("lena.png","rb");
+    FILE * f = fopen("../images/lena.png","rb");
     if(f != NULL)
     {
         bool is_good = true;

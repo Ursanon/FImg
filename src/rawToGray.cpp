@@ -29,7 +29,7 @@ int main(int argc, char * argv[])
 
 void convertToGray()
 {
-    FILE* f = fopen("lena.raw","rb");
+    FILE* f = fopen("../images/lena.raw","rb");
     if(f != NULL)
     {
         for(int i = 0, j = 0; i < GRAY_MEM;++i)
