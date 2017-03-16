@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <random>
 
+//TODO:
+// *cleanup & OOP
+
 struct RGB
 {
     uint8_t red;
@@ -40,7 +43,7 @@ void insertion_sort(ranking * pt, int size);
 
 static const int W = 128;
 static const int H = 128;
-static const int BPP = 1;
+static const int BPP = 3;
 static const int MEM = W*H*BPP; 
 
 static const int BEST_CNT = 5;
@@ -84,31 +87,28 @@ RGB getColor()
     std::random_device rand;
     RGB current;
     current.red = rand() & 0xff;
-    //UNCOMMENT!
-    //current.green = rand() & 0xff;
-    //current.blue = rand() & 0xff;
+    current.green = rand() & 0xff;
+    current.blue = rand() & 0xff;
     return current;
 }
 
 void combineColor(RGB *out, RGB &mutation,int index)
 {
     out[index].red = (out[index].red + mutation.red )>>1;
-    //UNCOMMENT!
-    //out[index].green = (in[index].green + mutation.green )>>1;
-    //out[index].blue = (in[index].blue + mutation.blue )>>1;
+    out[index].green = (out[index].green + mutation.green )>>1;
+    out[index].blue = (out[index].blue + mutation.blue )>>1;
 }
 
 void loadTarget()
 {
     FILE * file;
-    file = fopen("../images/genetic_g.raw","rb");
+    file = fopen("../images/genetic.raw","rb");
     
     for(int i = 0; i < MEM;++i)
     {
         fread(&target[i].red,sizeof(uint8_t),1,file);
-        //UNCOMMENT!
-        //fread(&target[i].green,sizeof(uint8_t),1,file);
-        //fread(&target[i].blue,sizeof(uint8_t),1,file);
+        fread(&target[i].green,sizeof(uint8_t),1,file);
+        fread(&target[i].blue,sizeof(uint8_t),1,file);
     }
     fclose(file);
 }
@@ -150,12 +150,12 @@ double rate(RGB* s)
 
     for(int i = 0; i < MEM;i++)
     {
-        diff += abs((double)target[i].red - (double)s[i].red)/((double)MEM*255);  
-        //TODO:
-        //other colors
+        diff += abs((double)target[i].red - (double)s[i].red)/((double)MEM*255);
+        diff += abs((double)target[i].green - (double)s[i].green)/((double)MEM*255);  
+        diff += abs((double)target[i].blue - (double)s[i].blue)/((double)MEM*255);    
     }
 
-    return diff;
+    return diff/3.f;
 }
 
 void evaluate()
@@ -224,9 +224,8 @@ void dump_img(int indx)
     for(int i = 0; i < MEM;++i)
     {
         fwrite(&best_spec[i].red,sizeof(uint8_t),1,file);
-        //UNCOMMENT!
-        //fwrite(&best_spec[i].green,sizeof(uint8_t),1,file);
-        //fwrite(&best_spec[i].blue,sizeof(uint8_t),1,file);
+        fwrite(&best_spec[i].green,sizeof(uint8_t),1,file);
+        fwrite(&best_spec[i].blue,sizeof(uint8_t),1,file);
     }
     fclose(file);
 }
