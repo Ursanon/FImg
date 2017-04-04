@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstring>
 
+#include <exception>
 #include <fstream>
 #include <cstdint>
 #include <random>
@@ -22,12 +23,23 @@ struct ranking
     double rating; 
 };
 
+
+struct Point
+{
+    int x;
+    int y;
+};
+
 RGB getColor();
 void combineColor(RGB *out, RGB &mutation, int index);
 
 void loadTarget();
 
 void mutate();
+
+void mutate_with_rectangle();
+
+void mutate_with_triangle();
 
 void dump_img(int indx);
 
@@ -41,10 +53,13 @@ void cross(RGB * out,RGB * parent1, RGB *parent2);
 
 void insertion_sort(ranking * pt, int size);
 
-static const int W = 128;
-static const int H = 128;
-static const int BPP = 3;
-static const int MEM = W*H*BPP; 
+int pointLen(Point & a);
+
+bool isTriangle(Point &a, Point &b, Point &c);
+
+static const int W = 200;
+static const int H = 133;
+static const int MEM = W*H; 
 
 static const int BEST_CNT = 5;
 static const int SPEC_CNT = 7;
@@ -115,18 +130,24 @@ void loadTarget()
 
 void mutate()
 {
+    //mutate_with_rectangle();
+    mutate_with_triangle();
+}
+
+void mutate_with_rectangle()
+{
     std::random_device rand;
 
-    uint8_t maxX = 127;
-    uint8_t maxY = 127;
-    uint8_t minX = 0;
-    uint8_t minY = 0;
+    uint32_t maxX = W - 1;
+    uint32_t maxY = H - 1;
+    uint32_t minX = 0;
+    uint32_t minY = 0;
 
-    uint8_t start_x = rand() % maxX;
-    uint8_t x_len = rand() % (maxX - start_x);
+    uint32_t start_x = rand() % maxX;
+    uint32_t x_len = rand() % (maxX - start_x);
 
-    uint8_t start_y = rand() %maxY;
-    uint8_t y_len = rand() %(maxY - start_y);
+    uint32_t start_y = rand() %maxY;
+    uint32_t y_len = rand() %(maxY - start_y);
 
     //color for mutation
     RGB color = getColor();
@@ -137,12 +158,91 @@ void mutate()
         {
             for(int k = 0; k < x_len;k++)
             {
-                combineColor(spec[i],color,(start_y+j)*H + k + start_x);
+                combineColor(spec[i],color,(start_y+j)*W + k + start_x);
             }
         }
     }
-
 }
+
+
+void mutate_with_triangle()
+{
+    std::random_device rand;
+
+    uint32_t maxX = W - 1;
+    uint32_t maxY = H - 1;
+    uint32_t minX = 0;
+    uint32_t minY = 0;
+
+    Point points[3];
+
+    uint32_t h_x = 0;
+    uint32_t h_y = 0;
+    uint32_t l_x = maxX;
+    uint32_t l_y = maxY;
+
+    //color for mutation
+    RGB color = getColor();
+
+    do
+    {
+        for(int i = 0; i < 3;++i)
+        {
+            points[i].x = rand() % maxX;
+            points[i].y = rand() % maxY;
+
+            if(h_x < points[i].x)
+                h_x = points[i].x;
+            if(h_y < points[i].y)
+                h_y = points[i].y;
+
+            if(l_x > points[i].x)
+                l_x = points[i].x;
+            if(l_y > points[i].y)
+                l_y = points[i].y;
+        }
+    }while(!isTriangle(points[0],points[1],points[2]));
+
+    long long int ar = 1/2 * (-points[1].y * points[2].x + points[0].y * (-points[1].y * points[2].x) + points[0].x * (points[1].y - points[2].y) + points[1].x * points[2].y);
+    int sign = (ar < 0) ? -1 : 1;
+
+
+    for(int i =(SPEC_CNT-BEST_CNT+1);i < SPEC_CNT;++i)
+    {
+        for(int j = l_y;j < h_y;++j)
+        {
+            for(int k = l_x;k<h_x;++k)
+            {
+                    long long int s = (points[0].y * points[2].x - points[0].x * points[2].y + (points[2].y - points[0].y) *k + (points[0].x - points[2].x) *j) * sign;
+                    long long int t = (points[0].x * points[1].y - points[0].y * points[1].x + (points[0].y - points[1].y) *k + (points[1].x - points[0].x) *j) * sign;
+                    if(s >= 0 && t >= 0)
+                        combineColor(spec[i],color,(j)*W + k);
+            }
+        }
+    }
+}
+
+int pointLen(Point & a)
+{
+    return sqrt(a.x * a.x + a.y * a.y);
+}
+
+bool isTriangle(Point &a, Point &b, Point &c)
+{
+    int aLen = pointLen(a);
+    int bLen = pointLen(b);
+    int cLen = pointLen(c);
+
+    if(aLen > bLen +cLen)
+        return true;
+    else if(bLen > aLen + cLen)
+        return true;
+    else if(cLen > aLen+bLen)
+        return true;
+    else 
+        return false;
+}
+
 
 double rate(RGB* s)
 {
@@ -210,18 +310,17 @@ void cross(RGB * out,RGB * parent1, RGB *parent2)
 
 void dump_img(int indx)
 {
-    if(indx % 5000)
+    if(indx % 1000)
         return;
 
     //char x;
     //scanf("%c",&x);
-
     char filename [256];
     sprintf(filename,"populationBased/out_%d.raw",indx);
     printf("\nOUT: %d",indx);
     FILE * file;
     file = fopen(filename,"wb");
-    for(int i = 0; i < MEM;++i)
+    for(int i = 0; i < MEM;i++)
     {
         fwrite(&best_spec[i].red,sizeof(uint8_t),1,file);
         fwrite(&best_spec[i].green,sizeof(uint8_t),1,file);
