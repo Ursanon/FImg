@@ -57,8 +57,8 @@ int pointLen(Point & a);
 
 bool isTriangle(Point &a, Point &b, Point &c);
 
-static const int W = 200;
-static const int H = 133;
+static const int W = 820;
+static const int H = 547;
 static const int MEM = W*H; 
 
 static const int BEST_CNT = 5;
@@ -117,7 +117,7 @@ void combineColor(RGB *out, RGB &mutation,int index)
 void loadTarget()
 {
     FILE * file;
-    file = fopen("../images/genetic.raw","rb");
+    file = fopen("../images/genetic_820_547.raw","rb");
     
     for(int i = 0; i < MEM;++i)
     {
