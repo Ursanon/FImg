@@ -7,6 +7,10 @@
 #include <cstdint>
 #include <random>
 
+#include <chrono>
+#include <thread>
+#include <vector>
+
 //TODO:
 // *cleanup & OOP
 
@@ -20,9 +24,8 @@ struct RGB
 struct ranking
 {
     size_t spec_indx;
-    double rating; 
+    float rating; 
 };
-
 
 struct Point
 {
@@ -31,6 +34,7 @@ struct Point
 };
 
 RGB getColor();
+
 void combineColor(RGB *out, RGB &mutation, int index);
 
 void loadTarget();
@@ -43,7 +47,7 @@ void mutate_with_triangle();
 
 void dump_img(int indx);
 
-double rate(RGB *s);
+float rate(RGB *s);
 
 void evaluate();
 
@@ -57,12 +61,16 @@ int pointLen(Point & a);
 
 bool isTriangle(Point &a, Point &b, Point &c);
 
+void combineColorWithThreads(int id);
+
+void rateWithThreads(int i);
+
 static const int W = 820;
-static const int H = 547;
+static const int H = 312;
 static const int MEM = W*H; 
 
-static const int BEST_CNT = 5;
-static const int SPEC_CNT = 7;
+static const int BEST_CNT = 3;
+static const int SPEC_CNT = 12;
 
 static double BEST_SPEC_RATE = 2.0;
 
@@ -76,25 +84,30 @@ RGB spec[SPEC_CNT][MEM] = {0};
 
 ranking spec_ranking[SPEC_CNT];
 
-
-
+static std::chrono::time_point<std::chrono::system_clock> timer_, time_end;
+static std::chrono::duration<float> elapsed_time;
 int main()
 {
+
+timer_ = std::chrono::system_clock::now();
 
     loadTarget();
 
     for(int i = 0;;++i)
     {
+        //printf("\nGeneration: %d",i);
+        
         mutate();
-
+         
         evaluate();
-        
-        crossOver();
-        
+
+        if(i % 25 == 0)
+        {
+            crossOver();
+        }
+
         dump_img(i);
     }
-
-
 }
 
 RGB getColor()
@@ -117,7 +130,7 @@ void combineColor(RGB *out, RGB &mutation,int index)
 void loadTarget()
 {
     FILE * file;
-    file = fopen("../images/genetic_820_547.raw","rb");
+    file = fopen("../images/eir_820_312.raw","rb");
     
     for(int i = 0; i < MEM;++i)
     {
@@ -130,11 +143,26 @@ void loadTarget()
 
 void mutate()
 {
-    //mutate_with_rectangle();
-    mutate_with_triangle();
+    mutate_with_rectangle();
+    //mutate_with_triangle();
 }
 
 void mutate_with_rectangle()
+{
+    std::vector<std::thread> threads_;
+
+    for(int i = (SPEC_CNT-BEST_CNT+1); i < SPEC_CNT;++i)
+    {
+        threads_.push_back(std::thread(combineColorWithThreads,i));
+    }
+
+    for(auto&& th : threads_)
+    {
+        th.join();        
+    }
+}
+
+void combineColorWithThreads(int id)
 {
     std::random_device rand;
 
@@ -152,18 +180,14 @@ void mutate_with_rectangle()
     //color for mutation
     RGB color = getColor();
 
-    for(int i = (SPEC_CNT-BEST_CNT+1); i < SPEC_CNT;++i)
+    for(int j = 0; j < y_len;j++)
     {
-        for(int j = 0; j < y_len;j++)
+        for(int k = 0; k < x_len;k++)
         {
-            for(int k = 0; k < x_len;k++)
-            {
-                combineColor(spec[i],color,(start_y+j)*W + k + start_x);
-            }
+            combineColor(spec[id],color,(start_y+j)*W + k + start_x);
         }
     }
 }
-
 
 void mutate_with_triangle()
 {
@@ -184,6 +208,8 @@ void mutate_with_triangle()
     //color for mutation
     RGB color = getColor();
 
+    double ar;
+
     do
     {
         for(int i = 0; i < 3;++i)
@@ -201,11 +227,12 @@ void mutate_with_triangle()
             if(l_y > points[i].y)
                 l_y = points[i].y;
         }
-    }while(!isTriangle(points[0],points[1],points[2]));
 
-    long long int ar = 1/2 * (-points[1].y * points[2].x + points[0].y * (-points[1].y * points[2].x) + points[0].x * (points[1].y - points[2].y) + points[1].x * points[2].y);
+        ar = 1/2.f * ((points[1].x - points[0].x) * ( points[2].y - points[0].y) - (points[1].y - points[0].y) * (points[2].x - points[0].x));
+    
+    }while(!isTriangle(points[0],points[1],points[2]) || (ar == 0));
+ 
     int sign = (ar < 0) ? -1 : 1;
-
 
     for(int i =(SPEC_CNT-BEST_CNT+1);i < SPEC_CNT;++i)
     {
@@ -213,10 +240,13 @@ void mutate_with_triangle()
         {
             for(int k = l_x;k<h_x;++k)
             {
-                    long long int s = (points[0].y * points[2].x - points[0].x * points[2].y + (points[2].y - points[0].y) *k + (points[0].x - points[2].x) *j) * sign;
-                    long long int t = (points[0].x * points[1].y - points[0].y * points[1].x + (points[0].y - points[1].y) *k + (points[1].x - points[0].x) *j) * sign;
-                    if(s >= 0 && t >= 0)
-                        combineColor(spec[i],color,(j)*W + k);
+                long long int s = (points[0].y * points[2].x - points[0].x * points[2].y + (points[2].y - points[0].y) *k + (points[0].x - points[2].x) *j) * sign;
+                long long int t = (points[0].x * points[1].y - points[0].y * points[1].x + (points[0].y - points[1].y) *k + (points[1].x - points[0].x) *j) * sign;
+                    
+                if(s >= 0 && t >= 0 && ((s + t) < (2 * ar * sign)))
+                {
+                    combineColor(spec[i],color,(j)*W + k);
+                }
             }
         }
     }
@@ -233,26 +263,26 @@ bool isTriangle(Point &a, Point &b, Point &c)
     int bLen = pointLen(b);
     int cLen = pointLen(c);
 
-    if(aLen > bLen +cLen)
+    if(aLen < bLen + cLen)
         return true;
-    else if(bLen > aLen + cLen)
+    else if(bLen < aLen + cLen)
         return true;
-    else if(cLen > aLen+bLen)
+    else if(cLen < aLen+bLen)
         return true;
     else 
         return false;
 }
 
 
-double rate(RGB* s)
+float rate(RGB* s)
 {
-    double diff = 0.0;
+    float diff = 0.0;
 
     for(int i = 0; i < MEM;i++)
     {
-        diff += abs((double)target[i].red - (double)s[i].red)/((double)MEM*255);
-        diff += abs((double)target[i].green - (double)s[i].green)/((double)MEM*255);  
-        diff += abs((double)target[i].blue - (double)s[i].blue)/((double)MEM*255);    
+        diff += abs(target[i].red - s[i].red)/(MEM*255.f);
+        diff += abs(target[i].green - s[i].green)/(MEM*255.f);  
+        diff += abs(target[i].blue - s[i].blue)/(MEM*255.f);    
     }
 
     return diff/3.f;
@@ -260,15 +290,20 @@ double rate(RGB* s)
 
 void evaluate()
 {
-    //rate every specimens
-    for(int i =0; i < SPEC_CNT;++i)
+    std::vector<std::thread> threads_;
+    
+    for(int i = 0; i < SPEC_CNT;++i)
     {
-        spec_ranking[i].spec_indx = i;
-        spec_ranking[i].rating = rate(spec[i]);
+        threads_.push_back(std::thread(rateWithThreads,i));
     }
+    
+    for(auto&& th : threads_)
+    {
+        th.join();        
+    }
+
     //sort'em
     insertion_sort(spec_ranking,SPEC_CNT);
-
 
     for(int i = 0;i < BEST_CNT;++i)
     {
@@ -280,6 +315,12 @@ void evaluate()
             BEST_SPEC_RATE = spec_ranking[i].rating;            
         }
     }
+}
+
+void rateWithThreads(int i)
+{
+    spec_ranking[i].spec_indx = i;
+    spec_ranking[i].rating = rate(spec[i]);
 }
 
 void crossOver()
@@ -310,7 +351,9 @@ void cross(RGB * out,RGB * parent1, RGB *parent2)
 
 void dump_img(int indx)
 {
-    if(indx % 1000)
+    if(!(indx % 100))
+        printf(".");
+    if(indx % 100000)
         return;
 
     //char x;
