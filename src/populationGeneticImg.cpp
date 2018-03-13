@@ -303,6 +303,7 @@ void evaluate()
     }
 
     //sort'em
+    //good enought for small (< ~9k items) array     
     insertion_sort(spec_ranking,SPEC_CNT);
 
     for(int i = 0;i < BEST_CNT;++i)
