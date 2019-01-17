@@ -1,4 +1,5 @@
+[Bb]uild
+[Bb]uild/*
+
 *.exe
 *.obj
-out.raw
-src/populationBased
