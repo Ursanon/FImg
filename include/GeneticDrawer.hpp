@@ -2,6 +2,7 @@
 #define GENETIC_DRAWER_HPP
 
 #include <string>
+#include <vector>
 
 #include "GreyscaleRawImage.hpp"
 
@@ -34,10 +35,10 @@ namespace bk
             GeneticDrawerSettings settings_;
             std::string output_dir_;
 
-            GreyscaleRawImage* current_bests_;
-            GreyscaleRawImage* speciments_;
+			std::vector<GreyscaleRawImage> current_bests_;
+			std::vector<GreyscaleRawImage> speciments_;
 
-            GreyscaleRawImage target_;
+			GreyscaleRawImage target_;
     };
 }
 

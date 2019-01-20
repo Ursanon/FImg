@@ -7,16 +7,12 @@ namespace bk
     GeneticDrawer::GeneticDrawer(const GreyscaleRawImage& target, GeneticDrawerSettings settings, const char* output_dir)
         : target_(target), output_dir_(output_dir), settings_(settings)
     {
-        current_bests_ = new GreyscaleRawImage[settings_.speciments_count];
+		current_bests_ = std::vector<GreyscaleRawImage>(settings.bests_count, GreyscaleRawImage(target.get_width(), target.get_height()));
+		speciments_ = std::vector<GreyscaleRawImage>(settings.speciments_count, GreyscaleRawImage(target.get_width(), target.get_height()));
     }
 
     GeneticDrawer::~GeneticDrawer()
     {
-        delete[] current_bests_;
-        current_bests_ = nullptr;
-
-        delete[] speciments_;
-        speciments_ = nullptr;
     }
 
     void GeneticDrawer::start()

@@ -27,17 +27,17 @@ namespace bk
         return image_;
     }
 
-	const size_t & GreyscaleRawImage::get_size()
+	const size_t GreyscaleRawImage::get_size() const
 	{
 		return size_;
 	}
 
-    const int& GreyscaleRawImage::get_height()
+	const int GreyscaleRawImage::get_height() const
     {
         return width_;
     }
 
-    const int& GreyscaleRawImage::get_width()
+	const int GreyscaleRawImage::get_width() const
     {
         return height_;
     }
@@ -47,11 +47,10 @@ namespace bk
         const char* file_mode = "wb";
         const int elements_count = 1;
 
-        printf("save under: %s!", file_path);
-
 		FILE * file = fopen(file_path, file_mode);
         if(file == nullptr)
         {
+			//todo: add error handling
             printf("Cant save: file null!");
 			return;
         }
@@ -61,11 +60,18 @@ namespace bk
             fwrite(&image_[i], sizeof(uint8_t), elements_count, file);
         }
         fclose(file);
+
+        printf("saved under: %s!", file_path);
     }
 
-    void GreyscaleRawImage::load_from_file(const char * path, const int& width, const int& height)
+	void GreyscaleRawImage::load_from_file(const char * path, const int& width, const int& height)
     {
-		GreyscaleRawImage(width, height);
+		width_ = width;
+		height_ = height;
+		size_ = width * height;
+
+		delete[] image_;
+		image_ = new uint8_t[size_];
 
         const char* file_mode = "rb";
         const int elements_count = 1;
@@ -73,6 +79,7 @@ namespace bk
 		FILE * file = fopen(path, file_mode);
         if(file == nullptr)
         {
+			//todo: add error handling
             printf("Cant load: file null!");
 			return;
         }
