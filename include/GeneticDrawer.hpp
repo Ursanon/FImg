@@ -40,6 +40,8 @@ namespace bk
 
 			void rate();
 
+			void sort_ranking(Rating * rating, size_t elements_count);
+
         private:
             GeneticDrawerSettings settings_;
             std::string output_dir_;

@@ -1,5 +1,6 @@
-#include <cstdio>
+#include <iostream>
 #include <random>
+#include <chrono>
 #include <algorithm>
 #include <thread>
 
@@ -45,32 +46,70 @@ namespace bk
 	{
 		bool in_progress = true;
 		uint64_t generation_number = 0;
+#ifdef BENCHMARK_TIME
+
+		std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
+		std::chrono::duration<float> elapsed_time;
+#endif
 
 		while (in_progress)
 		{
-			std::vector<std::thread> threads;
-			for (int i = 0; i < settings_.speciments_count; ++i)
+#ifdef BENCHMARK_TIME
+			time_start = std::chrono::system_clock::now();
 			{
-				int id = i;
-				threads.push_back(std::thread(&GeneticDrawer::mutate, this, id));
-				//mutate(i);
+#endif
+				std::vector<std::thread> threads;
+				for (int i = 0; i < settings_.speciments_count; ++i)
+				{
+					int id = i;
+					threads.push_back(std::thread(&GeneticDrawer::mutate, this, id));
+					//mutate(i);
+				}
+
+				for (auto&& t : threads)
+				{
+					t.join();
+				}
+#ifdef BENCHMARK_TIME
 			}
-			
-			for (auto&& t : threads)
-			{
-				t.join();
-			}	
 
-			evaluate();
+			time_end = std::chrono::system_clock::now();
+			auto dur = time_end - time_start;
+			auto secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
+			std::cout << "\nmutation time: " << secs.count() << " [s]";
 
-			if (generation_number % 25)
+
+			time_start = std::chrono::system_clock::now();
 			{
-				cross_over();
+#endif
+				evaluate();
+#ifdef BENCHMARK_TIME
+
 			}
+			time_end = std::chrono::system_clock::now();
+			dur = time_end - time_start;
+			secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
+			std::cout << "\nEvaluate time: " << secs.count() << " [s]";
 
-			++generation_number;
 
-			if (generation_number % 100 == 0)
+			time_start = std::chrono::system_clock::now();
+			{
+#endif
+
+				if (generation_number % 25)
+				{
+					cross_over();
+				}
+#ifdef BENCHMARK_TIME
+
+			}
+			time_end = std::chrono::system_clock::now();
+			dur = time_end - time_start;
+			secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
+			std::cout << "\ncross time: " << secs.count() << " [s]";
+#endif
+
+			if (generation_number % 10000 == 0)
 			{
 				printf("\nsaving : %u generation...", generation_number);
 
@@ -80,6 +119,8 @@ namespace bk
 
 				current_bests_[0]->save_to_file(output_path.c_str());
 			}
+
+			++generation_number;
 		}
 	}
 
@@ -109,8 +150,6 @@ namespace bk
 				uint8_t * image = speciments_[id]->get_image();
 				uint8_t current_color = *(current_bests_[parent]->get_image() + index);
 				*(image + index) = (current_color + new_color >> 1);
-
-				//printf("\nsetting new color on %d! was: %d, current: %d, newRand: %d", id, current_color, *(image + index), newRandom);
 			}
 		}
 	}
@@ -123,41 +162,54 @@ namespace bk
 	void GeneticDrawer::cross_over()
 	{
 		size_t size = target_.get_size();
-		size_t otherParent = rand() % (settings_.bests_count-1) +1;
+		size_t otherParent = rand() % (settings_.bests_count - 1) + 1;
 
 		memcpy(current_bests_[0]->get_image() + size / 2, current_bests_[otherParent]->get_image() + size / 2, sizeof(uint8_t) * size / 2);
 	}
 
+	static std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
+	
 	void GeneticDrawer::rate()
 	{
+#ifdef BENCHMARK_TIME
+
+		time_end = std::chrono::system_clock::now();
+#endif
 		Rating* rating = new Rating[settings_.speciments_count];
 
 		std::vector<std::thread> threads;
 		for (size_t i = 0; i < settings_.speciments_count; ++i)
 		{
 			threads.push_back(std::thread([&rating, this, i]() -> void
-				{ 
-					//calculate rating
-					float diff = 0.f;
+			{
+				//calculate rating
+				float diff = 0.f;
 
-					size_t size = target_.get_size();
-					for (size_t j = 0; j < size; ++j)
-					{
-						diff += abs(target_.get_image()[j] - speciments_[i]->get_image()[j]) / (size * 255.f);
-					}
+				size_t size = target_.get_size();
+				for (size_t j = 0; j < size-2; j+=2)
+				{
+					diff += abs(target_.get_image()[j] - speciments_[i]->get_image()[j]) / (size * 255.f);
+				}
 
-					rating[i].index = i;
-					rating[i].rate = diff;
-				})
+				rating[i].index = i;
+				rating[i].rate = diff;
+			})
 			);
 		}
 
 		for (auto&& t : threads)
 			t.join();
+#ifdef BENCHMARK_TIME
 
-		std::sort(rating, rating + settings_.speciments_count, [](const Rating& a, const Rating& b) -> bool { return a.rate > b.rate; });
+		time_end = std::chrono::system_clock::now();
+		auto dur = time_end - time_start;
+		auto secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
+		std::cout << "\ncalc rating time: " << secs.count() << " [s]";
+#endif
 
-		std::sort(bestRating_, bestRating_ + settings_.bests_count, [](const Rating& a, const Rating& b) -> bool { return a.rate > b.rate; });
+		sort_ranking(rating, settings_.speciments_count);
+		
+		sort_ranking(bestRating_, settings_.bests_count);
 
 		for (size_t i = 0, j = 0; i < settings_.speciments_count; ++i)
 		{
@@ -178,5 +230,22 @@ namespace bk
 		}
 
 		delete[] rating;
+	}
+
+	//insertion sort is good enought for small (< ~9k items) array   
+	void GeneticDrawer::sort_ranking(Rating * rating, size_t elements_count)
+	{
+		for (size_t i = 1; i < elements_count; ++i)
+		{
+			Rating temp = rating[i];
+
+			int j = i - 1;
+			while (temp.rate < rating[j].rate && j >= 0)
+			{
+				rating[j + 1] = rating[j];
+				j--;
+			}
+			rating[j + 1] = temp;
+		}
 	}
 }

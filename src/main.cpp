@@ -13,7 +13,7 @@ int main(int argc, char** args)
 	bk::GreyscaleRawImage image;
 	image.load_from_file(input_path, width, height);
 	
-	bk::GeneticDrawerSettings settings { 12, 2, 3 };
+	bk::GeneticDrawerSettings settings { 6, 2, 3 };
 
 	bk::GeneticDrawer drawer(image, settings, output_dir);
 
