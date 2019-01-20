@@ -15,9 +15,9 @@ namespace bk
             
             ~GreyscaleRawImage();
 
-            uint8_t* const get_image();
-            const size_t get_size() const ;
-            const int get_height() const ;
+			uint8_t* const get_image();
+            const size_t get_size() const;
+            const int get_height() const;
             const int get_width() const;
 
             void save_to_file(const char * path) override;

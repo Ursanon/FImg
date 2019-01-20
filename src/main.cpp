@@ -13,10 +13,11 @@ int main(int argc, char** args)
 	bk::GreyscaleRawImage image;
 	image.load_from_file(input_path, width, height);
 	
-	bk::GeneticDrawerSettings settings { 5, 2, 2 };
+	bk::GeneticDrawerSettings settings { 12, 2, 3 };
 
 	bk::GeneticDrawer drawer(image, settings, output_dir);
+
 	drawer.start();
-	
+
     return 0;
 }

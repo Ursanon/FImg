@@ -20,6 +20,12 @@ namespace bk
         uint32_t bests_count;
     };
 
+	struct Rating
+	{
+		size_t index;
+		float rate;
+	};
+
     class GeneticDrawer
     {
         public:
@@ -28,17 +34,22 @@ namespace bk
             void start();
 
         private:
-            void mutate();
+            void mutate(int id);
+			void evaluate();
             void cross_over();
+
+			void rate();
 
         private:
             GeneticDrawerSettings settings_;
             std::string output_dir_;
 
-			std::vector<GreyscaleRawImage> current_bests_;
-			std::vector<GreyscaleRawImage> speciments_;
+			std::vector<GreyscaleRawImage*> current_bests_;
+			std::vector<GreyscaleRawImage*> speciments_;
 
 			GreyscaleRawImage target_;
+			
+			Rating* bestRating_ = new Rating[settings_.bests_count];
     };
 }
 

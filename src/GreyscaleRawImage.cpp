@@ -12,8 +12,8 @@ namespace bk
     GreyscaleRawImage::GreyscaleRawImage(const int& width, const int& height)
         :  width_(width), height_(height), size_(width * height)
     {
-		delete[] image_;
         image_ = new uint8_t[size_];
+		memset(image_, 0, sizeof(uint8_t) * size_);
     }
 
     GreyscaleRawImage::~GreyscaleRawImage()
@@ -22,10 +22,10 @@ namespace bk
         image_ = nullptr;
     }
 
-    uint8_t* const GreyscaleRawImage::get_image()
-    {
-        return image_;
-    }
+	uint8_t* const GreyscaleRawImage::get_image()
+	{
+		return image_;
+	}
 
 	const size_t GreyscaleRawImage::get_size() const
 	{
@@ -55,10 +55,10 @@ namespace bk
 			return;
         }
         
-        for(size_t i = 0; i < size_; ++i)
-        {
-            fwrite(&image_[i], sizeof(uint8_t), elements_count, file);
-        }
+		for (size_t i = 0; i < size_; ++i)
+		{
+			fwrite(&image_[i], sizeof(uint8_t), elements_count, file);
+		}
         fclose(file);
 
         printf("saved under: %s!", file_path);
@@ -70,7 +70,10 @@ namespace bk
 		height_ = height;
 		size_ = width * height;
 
-		delete[] image_;
+		if (image_ != nullptr)
+		{
+			delete[] image_;
+		}
 		image_ = new uint8_t[size_];
 
         const char* file_mode = "rb";
