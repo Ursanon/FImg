@@ -8,7 +8,7 @@ namespace bk
         public:
             virtual void save_to_file(const char * path) = 0;
         protected:
-            virtual void load_from_file(const char * path) = 0;
+            virtual void load_from_file(const char * path, const int& width, const int& height) = 0;
     };
 } // bk
 

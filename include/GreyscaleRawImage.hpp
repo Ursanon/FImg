@@ -10,19 +10,24 @@ namespace bk
     class GreyscaleRawImage : public RawImage
     {
         public:
-            GreyscaleRawImage(const char * path, const int& width, const int& height);
+            GreyscaleRawImage();
+            GreyscaleRawImage(const int& width, const int& height);
+            
             ~GreyscaleRawImage();
 
-            void save_to_file(const char * path) override;
-            
-        private:
-            void load_from_file(const char * path) override;
+            uint8_t* const get_image();
+            const size_t& get_size();
+            const int& get_height();
+            const int& get_width();
 
-        public:
+            void save_to_file(const char * path) override;
+            void load_from_file(const char * path, const int& width, const int& height) override;
+
+        private:
             int width_;
             int height_;
             size_t size_;
-            uint8_t* image_;
+			uint8_t* image_ = nullptr;
     };
 }
 #endif

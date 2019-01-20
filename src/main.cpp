@@ -10,11 +10,13 @@ int main(int argc, char** args)
     const char * input_path = "./input/Raw-Lenna-256.raw";
     const char * output_dir = "./output/";
 
-	bk::GreyscaleRawImage image(input_path, width, height);
+	bk::GreyscaleRawImage image;
+	image.load_from_file(input_path, width, height);
 	
-	
-	std::string outputPath = std::string(output_dir).append("test.raw");
-	image.save_to_file(outputPath.c_str());
+	bk::GeneticDrawerSettings settings { 5, 2, 2 };
 
+	bk::GeneticDrawer drawer(image, settings, output_dir);
+	drawer.start();
+	
     return 0;
 }
