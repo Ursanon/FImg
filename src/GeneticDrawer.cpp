@@ -58,18 +58,7 @@ namespace bk
 			time_start = std::chrono::system_clock::now();
 			{
 #endif
-				std::vector<std::thread> threads;
-				for (int i = 0; i < settings_.speciments_count; ++i)
-				{
-					int id = i;
-					threads.push_back(std::thread(&GeneticDrawer::mutate, this, id));
-					//mutate(i);
-				}
 
-				for (auto&& t : threads)
-				{
-					t.join();
-				}
 #ifdef BENCHMARK_TIME
 			}
 
@@ -82,7 +71,6 @@ namespace bk
 			time_start = std::chrono::system_clock::now();
 			{
 #endif
-				evaluate();
 #ifdef BENCHMARK_TIME
 
 			}
@@ -96,10 +84,7 @@ namespace bk
 			{
 #endif
 
-				if (generation_number % 25)
-				{
-					cross_over();
-				}
+			cross_over();
 #ifdef BENCHMARK_TIME
 
 			}
@@ -108,6 +93,20 @@ namespace bk
 			secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
 			std::cout << "\ncross time: " << secs.count() << " [s]";
 #endif
+			std::vector<std::thread> threads;
+			for (int i = 0; i < settings_.speciments_count; ++i)
+			{
+				int id = i;
+				threads.push_back(std::thread(&GeneticDrawer::mutate, this, id));
+					//mutate(i);
+			}
+
+			for (auto&& t : threads)
+			{
+				t.join();
+			}
+
+			evaluate();
 
 			if (generation_number % 10000 == 0)
 			{
@@ -133,14 +132,14 @@ namespace bk
 		size_t maxY = target_.get_height() - 1;
 
 		size_t start_x = rand() % maxX;
-		size_t x_len = rand() % (maxX - start_x);
+		size_t x_len = rand() % (maxX - start_x) / 3;
 
 		size_t start_y = rand() % maxY;
-		size_t y_len = rand() % (maxY - start_y);
+		size_t y_len = rand() % (maxY - start_y) / 3;
 
 		size_t speciments_size = speciments_.size();
 
-		size_t parent = rand() % current_bests_.size();
+		size_t parent = 0;
 		for (size_t j = 0; j < y_len; ++j)
 		{
 			for (size_t k = 0; k < x_len; ++k)
@@ -150,6 +149,11 @@ namespace bk
 				uint8_t * image = speciments_[id]->get_image();
 				uint8_t current_color = *(current_bests_[parent]->get_image() + index);
 				*(image + index) = (current_color + new_color >> 1);
+			}
+			parent++;
+			if(parent >= settings_.bests_count)
+			{
+				parent = 0;
 			}
 		}
 	}
@@ -164,7 +168,12 @@ namespace bk
 		size_t size = target_.get_size();
 		size_t otherParent = rand() % (settings_.bests_count - 1) + 1;
 
-		memcpy(current_bests_[0]->get_image() + size / 2, current_bests_[otherParent]->get_image() + size / 2, sizeof(uint8_t) * size / 2);
+		for (size_t i = 0; i < target_.get_size(); ++i)
+		{
+			uint8_t * image = current_bests_[0]->get_image();
+			uint8_t current_color = *(current_bests_[otherParent]->get_image() + i);
+			*(image + i) = (*(image + i) + current_color >> 1);
+		}
 	}
 
 	static std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
@@ -183,12 +192,14 @@ namespace bk
 			threads.push_back(std::thread([&rating, this, i]() -> void
 			{
 				//calculate rating
-				float diff = 0.f;
+				double diff = 0.f;
 
 				size_t size = target_.get_size();
-				for (size_t j = 0; j < size-2; j+=2)
+				for (size_t j = 0; j < size; ++j)
 				{
-					diff += abs(target_.get_image()[j] - speciments_[i]->get_image()[j]) / (size * 255.f);
+					double a = target_.get_image()[j];
+					double b = speciments_[i]->get_image()[j];
+					diff += (a-b) * (a-b);
 				}
 
 				rating[i].index = i;
