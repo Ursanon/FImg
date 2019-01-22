@@ -138,6 +138,7 @@ namespace bk
 		size_t parent = rand() % settings_.bests_count;
 		uint8_t* parentImage = current_bests_[parent]->get_image();
 
+		memcpy(speciments_[id]->get_image(), current_bests_[id % settings_.bests_count]->get_image(), sizeof(uint8_t) * target_.get_size());
 
 		for (size_t j = 0; j < y_len; ++j)
 		{
@@ -209,11 +210,6 @@ namespace bk
 		for (int i = 0; i < settings_.bests_count; ++i)
 		{
 			memcpy(current_bests_[i]->get_image(), speciments_[rating[i].index]->get_image(), sizeof(uint8_t) * target_.get_size());
-		}
-
-		for (int i = settings_.bests_count; i < settings_.speciments_count; ++i)
-		{
-			memcpy(speciments_[rating[i].index]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * target_.get_size());
 		}
 
 		delete[] rating;
