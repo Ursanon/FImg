@@ -15,8 +15,6 @@ namespace bk
 		for (int i = 0; i < settings.bests_count; ++i)
 		{
 			current_bests_.push_back(new GreyscaleRawImage(target.get_width(), target.get_height()));
-			bestRating_[i].index = i;
-			bestRating_[i].rate = 255;
 		}
 
 		speciments_ = std::vector<GreyscaleRawImage*>();
@@ -108,7 +106,7 @@ namespace bk
 
 			evaluate();
 
-			if (generation_number % 10000 == 0)
+			if (generation_number % 100 == 0)
 			{
 				printf("\nsaving : %u generation...", generation_number);
 
@@ -132,14 +130,15 @@ namespace bk
 		size_t maxY = target_.get_height() - 1;
 
 		size_t start_x = rand() % maxX;
-		size_t x_len = rand() % (maxX - start_x) / 3;
+		size_t x_len = rand() % (maxX - start_x) + 1;
 
 		size_t start_y = rand() % maxY;
-		size_t y_len = rand() % (maxY - start_y) / 3;
+		size_t y_len = rand() % (maxY - start_y) + 1;
 
-		size_t speciments_size = speciments_.size();
+		size_t parent = rand() % settings_.bests_count;
+		uint8_t* parentImage = current_bests_[parent]->get_image();
 
-		size_t parent = 0;
+
 		for (size_t j = 0; j < y_len; ++j)
 		{
 			for (size_t k = 0; k < x_len; ++k)
@@ -147,13 +146,8 @@ namespace bk
 				size_t index = (start_y + j)*target_.get_width() + k + start_x;
 
 				uint8_t * image = speciments_[id]->get_image();
-				uint8_t current_color = *(current_bests_[parent]->get_image() + index);
-				*(image + index) = (current_color + new_color >> 1);
-			}
-			parent++;
-			if(parent >= settings_.bests_count)
-			{
-				parent = 0;
+
+				*(image + index) = (parentImage[index] + new_color) >> 1;
 			}
 		}
 	}
@@ -165,15 +159,7 @@ namespace bk
 
 	void GeneticDrawer::cross_over()
 	{
-		size_t size = target_.get_size();
-		size_t otherParent = rand() % (settings_.bests_count - 1) + 1;
 
-		for (size_t i = 0; i < target_.get_size(); ++i)
-		{
-			uint8_t * image = current_bests_[0]->get_image();
-			uint8_t current_color = *(current_bests_[otherParent]->get_image() + i);
-			*(image + i) = (*(image + i) + current_color >> 1);
-		}
 	}
 
 	static std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
@@ -197,8 +183,8 @@ namespace bk
 				size_t size = target_.get_size();
 				for (size_t j = 0; j < size; ++j)
 				{
-					double a = target_.get_image()[j];
-					double b = speciments_[i]->get_image()[j];
+					double a = speciments_[i]->get_image()[j];
+					double b = target_.get_image()[j];
 					diff += (a-b) * (a-b);
 				}
 
@@ -219,25 +205,15 @@ namespace bk
 #endif
 
 		sort_ranking(rating, settings_.speciments_count);
-		
-		sort_ranking(bestRating_, settings_.bests_count);
 
-		for (size_t i = 0, j = 0; i < settings_.speciments_count; ++i)
+		for (int i = 0; i < settings_.bests_count; ++i)
 		{
-			if (bestRating_[j].rate > rating[i].rate)
-			{
-				memcpy(current_bests_[bestRating_[j].index]->get_image(), speciments_[rating[i].index]->get_image(), sizeof(uint8_t) * current_bests_[j]->get_size());
-				bestRating_[j].rate = rating[i].rate;
-			}
-			else if (j <= settings_.bests_count)
-			{
-				j++;
-				i--;
-			}
-			else
-			{
-				j = 0;
-			}
+			memcpy(current_bests_[i]->get_image(), speciments_[rating[i].index]->get_image(), sizeof(uint8_t) * target_.get_size());
+		}
+
+		for (int i = settings_.bests_count; i < settings_.speciments_count; ++i)
+		{
+			memcpy(speciments_[rating[i].index]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * target_.get_size());
 		}
 
 		delete[] rating;

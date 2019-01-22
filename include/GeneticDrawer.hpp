@@ -10,13 +10,12 @@ namespace bk
 {
     struct GeneticDrawerSettings
     {
-        GeneticDrawerSettings(uint32_t speciments, uint32_t parents, uint32_t bests)
-            : speciments_count(speciments), parents_count(parents), bests_count(bests) 
+        GeneticDrawerSettings(uint32_t speciments, uint32_t bests)
+            : speciments_count(speciments), bests_count(bests) 
         {
         }
 
         uint32_t speciments_count;
-        uint32_t parents_count;
         uint32_t bests_count;
     };
 
