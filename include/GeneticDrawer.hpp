@@ -49,8 +49,6 @@ namespace bk
 			std::vector<GreyscaleRawImage*> speciments_;
 
 			GreyscaleRawImage target_;
-			
-			Rating* bestRating_ = new Rating[settings_.bests_count];
     };
 }
 

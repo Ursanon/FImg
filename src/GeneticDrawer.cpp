@@ -138,8 +138,6 @@ namespace bk
 		size_t parent = rand() % settings_.bests_count;
 		uint8_t* parentImage = current_bests_[parent]->get_image();
 
-		memcpy(speciments_[id]->get_image(), current_bests_[id % settings_.bests_count]->get_image(), sizeof(uint8_t) * target_.get_size());
-
 		for (size_t j = 0; j < y_len; ++j)
 		{
 			for (size_t k = 0; k < x_len; ++k)
@@ -160,7 +158,21 @@ namespace bk
 
 	void GeneticDrawer::cross_over()
 	{
+		std::random_device rand;
 
+		int n1 = rand() % target_.get_size();
+		int rest = target_.get_size() - n1;
+
+		for (int i = 0; i < settings_.speciments_count; ++i)
+		{
+			memcpy(speciments_[i]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * n1);
+			memcpy(speciments_[i]->get_image() + n1, current_bests_[i % settings_.bests_count]->get_image() + n1, sizeof(uint8_t) * rest);
+		}
+
+		//for (int i = 0; i < settings_.speciments_count; ++i)
+		//{
+		//	memcpy(speciments_[i]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * target_.get_size());
+		//}
 	}
 
 	static std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
