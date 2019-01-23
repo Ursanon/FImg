@@ -1,5 +1,4 @@
 #include <iostream>
-#include <random>
 #include <chrono>
 #include <algorithm>
 #include <thread>
@@ -9,14 +8,19 @@
 namespace bk
 {
 	GeneticDrawer::GeneticDrawer(const GreyscaleRawImage& target, GeneticDrawerSettings settings, const char* output_dir)
-		: target_(target), output_dir_(output_dir), settings_(settings)
+		: target_(target), 
+		output_dir_(output_dir),
+		settings_(settings),
+		generator_(std::random_device()())
 	{
+		//todo: remove vectors?
 		current_bests_ = std::vector<GreyscaleRawImage*>();
 		for (int i = 0; i < settings.bests_count; ++i)
 		{
 			current_bests_.push_back(new GreyscaleRawImage(target.get_width(), target.get_height()));
 		}
 
+		//todo: remove vectors?
 		speciments_ = std::vector<GreyscaleRawImage*>();
 		for (int i = 0; i < settings.speciments_count; ++i)
 		{
@@ -124,18 +128,18 @@ namespace bk
 	void GeneticDrawer::mutate(int id)
 	{
 		std::random_device rand;
-		uint8_t new_color = rand() % 255;
+		uint8_t new_color = generator_() % 255;
 
 		size_t maxX = target_.get_width() - 1;
 		size_t maxY = target_.get_height() - 1;
 
-		size_t start_x = rand() % maxX;
-		size_t x_len = rand() % (maxX - start_x) + 1;
+		size_t start_x = generator_() % maxX;
+		size_t x_len = generator_() % (maxX - start_x) + 1;
 
-		size_t start_y = rand() % maxY;
-		size_t y_len = rand() % (maxY - start_y) + 1;
+		size_t start_y = generator_() % maxY;
+		size_t y_len = generator_() % (maxY - start_y) + 1;
 
-		size_t parent = rand() % settings_.bests_count;
+		size_t parent = generator_() % settings_.bests_count;
 		uint8_t* parentImage = current_bests_[parent]->get_image();
 
 		for (size_t j = 0; j < y_len; ++j)
@@ -160,7 +164,7 @@ namespace bk
 	{
 		std::random_device rand;
 
-		int n1 = rand() % target_.get_size();
+		int n1 = generator_() % target_.get_size();
 		int rest = target_.get_size() - n1;
 
 		for (int i = 0; i < settings_.speciments_count; ++i)
@@ -217,6 +221,7 @@ namespace bk
 		std::cout << "\ncalc rating time: " << secs.count() << " [s]";
 #endif
 
+		//todo: benchmark time!
 		sort_ranking(rating, settings_.speciments_count);
 
 		for (int i = 0; i < settings_.bests_count; ++i)

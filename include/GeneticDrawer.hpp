@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <random>
 
 #include "GreyscaleRawImage.hpp"
 
@@ -28,7 +29,7 @@ namespace bk
     class GeneticDrawer
     {
         public:
-            GeneticDrawer(const GreyscaleRawImage& target, GeneticDrawerSettings settings, const char* output_dir);
+            GeneticDrawer(const GreyscaleRawImage& target, const GeneticDrawerSettings settings, const char* output_dir);
             ~GeneticDrawer();
             void start();
 
@@ -42,6 +43,8 @@ namespace bk
 			void sort_ranking(Rating * rating, size_t elements_count);
 
         private:
+			std::mt19937 generator_;
+
             GeneticDrawerSettings settings_;
             std::string output_dir_;
 
