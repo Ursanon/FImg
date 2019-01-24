@@ -38,8 +38,6 @@ namespace bk
 			void evaluate();
             void cross_over();
 
-			void rate();
-
 			void sort_ranking(Rating * rating, size_t elements_count);
 
         private:

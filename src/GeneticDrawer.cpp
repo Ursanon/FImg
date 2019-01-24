@@ -26,7 +26,6 @@ namespace bk
 		{
 			speciments_.push_back(new GreyscaleRawImage(target.get_width(), target.get_height()));
 		}
-
 	}
 
 	GeneticDrawer::~GeneticDrawer()
@@ -127,7 +126,6 @@ namespace bk
 
 	void GeneticDrawer::mutate(int id)
 	{
-		std::random_device rand;
 		uint8_t new_color = generator_() % 255;
 
 		size_t maxX = target_.get_width() - 1;
@@ -157,34 +155,7 @@ namespace bk
 
 	void GeneticDrawer::evaluate()
 	{
-		rate();
-	}
-
-	void GeneticDrawer::cross_over()
-	{
-		std::random_device rand;
-
-		int n1 = generator_() % target_.get_size();
-		int rest = target_.get_size() - n1;
-
-		for (int i = 0; i < settings_.speciments_count; ++i)
-		{
-			memcpy(speciments_[i]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * n1);
-			memcpy(speciments_[i]->get_image() + n1, current_bests_[i % settings_.bests_count]->get_image() + n1, sizeof(uint8_t) * rest);
-		}
-
-		//for (int i = 0; i < settings_.speciments_count; ++i)
-		//{
-		//	memcpy(speciments_[i]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * target_.get_size());
-		//}
-	}
-
-	static std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
-	
-	void GeneticDrawer::rate()
-	{
 #ifdef BENCHMARK_TIME
-
 		time_end = std::chrono::system_clock::now();
 #endif
 		Rating* rating = new Rating[settings_.speciments_count];
@@ -194,7 +165,6 @@ namespace bk
 		{
 			threads.push_back(std::thread([&rating, this, i]() -> void
 			{
-				//calculate rating
 				double diff = 0.f;
 
 				size_t size = target_.get_size();
@@ -202,7 +172,7 @@ namespace bk
 				{
 					double a = speciments_[i]->get_image()[j];
 					double b = target_.get_image()[j];
-					diff += (a-b) * (a-b);
+					diff += (a - b) * (a - b);
 				}
 
 				rating[i].index = i;
@@ -213,8 +183,8 @@ namespace bk
 
 		for (auto&& t : threads)
 			t.join();
-#ifdef BENCHMARK_TIME
 
+#ifdef BENCHMARK_TIME
 		time_end = std::chrono::system_clock::now();
 		auto dur = time_end - time_start;
 		auto secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
@@ -230,9 +200,26 @@ namespace bk
 		}
 
 		delete[] rating;
+
 	}
 
-	//insertion sort is good enought for small (< ~9k items) array   
+	void GeneticDrawer::cross_over()
+	{
+		int part_gene_size = generator_() % target_.get_size();
+		int rest_gene_size = target_.get_size() - part_gene_size;
+
+		for (int i = 0; i < settings_.speciments_count; ++i)
+		{
+			memcpy(speciments_[i]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * part_gene_size);
+			memcpy(speciments_[i]->get_image() + part_gene_size, current_bests_[i % settings_.bests_count]->get_image() + part_gene_size, sizeof(uint8_t) * rest_gene_size);
+		}
+	}
+
+#ifdef BENCHMARK_TIME
+	static std::chrono::time_point<std::chrono::system_clock> time_start, time_end;
+#endif
+
+	//insertion sort is good enought for small (< ~9k items) array
 	void GeneticDrawer::sort_ranking(Rating * rating, size_t elements_count)
 	{
 		for (size_t i = 1; i < elements_count; ++i)
