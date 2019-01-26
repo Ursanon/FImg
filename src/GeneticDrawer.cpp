@@ -8,7 +8,7 @@
 namespace bk
 {
 	GeneticDrawer::GeneticDrawer(const GreyscaleRawImage& target, GeneticDrawerSettings settings, const char* output_dir)
-		: target_(target), 
+		: target_(target),
 		output_dir_(output_dir),
 		settings_(settings),
 		generator_(std::random_device()())
@@ -85,7 +85,7 @@ namespace bk
 			{
 #endif
 
-			cross_over();
+				cross_over();
 #ifdef BENCHMARK_TIME
 
 			}
@@ -99,7 +99,7 @@ namespace bk
 			{
 				int id = i;
 				threads.push_back(std::thread(&GeneticDrawer::mutate, this, id));
-					//mutate(i);
+				//mutate(i);
 			}
 
 			for (auto&& t : threads)
@@ -114,6 +114,7 @@ namespace bk
 				printf("\nsaving : %u generation...", generation_number);
 
 				std::string output_path = output_dir_;
+				output_path.append("/");
 				output_path.append(std::to_string(generation_number));
 				output_path.append(".raw");
 
@@ -126,7 +127,8 @@ namespace bk
 
 	void GeneticDrawer::mutate(int id)
 	{
-		uint8_t new_color = generator_() % 255;
+		GreyscaleColor new_color;
+		new_color.greyscale = generator_() % 255;
 
 		size_t maxX = target_.get_width() - 1;
 		size_t maxY = target_.get_height() - 1;
@@ -137,18 +139,18 @@ namespace bk
 		size_t start_y = generator_() % maxY;
 		size_t y_len = generator_() % (maxY - start_y) + 1;
 
-		size_t parent = generator_() % settings_.bests_count;
-		uint8_t* parentImage = current_bests_[parent]->get_image();
+		size_t parent_index = generator_() % settings_.bests_count;
+		GreyscaleRawImage* parentImage = current_bests_[parent_index];
 
 		for (size_t j = 0; j < y_len; ++j)
 		{
 			for (size_t k = 0; k < x_len; ++k)
 			{
-				size_t index = (start_y + j)*target_.get_width() + k + start_x;
+				size_t pixel_x = start_y + j;
+				size_t pixel_y = start_x + k;
 
-				uint8_t * image = speciments_[id]->get_image();
-
-				*(image + index) = (parentImage[index] + new_color) >> 1;
+				GreyscaleColor pixel_color = GreyscaleColor::combine(parentImage->get_pixel(pixel_x, pixel_y), new_color);
+				speciments_[id]->set_pixel(pixel_x, pixel_y, pixel_color);
 			}
 		}
 	}
@@ -170,8 +172,8 @@ namespace bk
 				size_t size = target_.get_size();
 				for (size_t j = 0; j < size; ++j)
 				{
-					double a = speciments_[i]->get_image()[j];
-					double b = target_.get_image()[j];
+					double a = speciments_[i]->get_pixel(j).greyscale;
+					double b = target_.get_pixel(j).greyscale;
 					diff += (a - b) * (a - b);
 				}
 
@@ -196,11 +198,10 @@ namespace bk
 
 		for (int i = 0; i < settings_.bests_count; ++i)
 		{
-			memcpy(current_bests_[i]->get_image(), speciments_[rating[i].index]->get_image(), sizeof(uint8_t) * target_.get_size());
+			current_bests_[i]->copy_pixels_from(*speciments_[rating[i].index]);
 		}
 
 		delete[] rating;
-
 	}
 
 	void GeneticDrawer::cross_over()
@@ -210,8 +211,9 @@ namespace bk
 
 		for (int i = 0; i < settings_.speciments_count; ++i)
 		{
-			memcpy(speciments_[i]->get_image(), current_bests_[i % settings_.bests_count]->get_image(), sizeof(uint8_t) * part_gene_size);
-			memcpy(speciments_[i]->get_image() + part_gene_size, current_bests_[i % settings_.bests_count]->get_image() + part_gene_size, sizeof(uint8_t) * rest_gene_size);
+			int parent = i % settings_.bests_count;
+			speciments_[i]->copy_pixels_from(*current_bests_[parent], 0, part_gene_size);
+			speciments_[i]->copy_pixels_from(*current_bests_[parent], part_gene_size, rest_gene_size);
 		}
 	}
 
