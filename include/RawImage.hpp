@@ -3,21 +3,6 @@
 
 namespace bk
 {
-	//template <typename T>
-	//struct Vector2
-	//{
-	//public:
-	//	Vector2();
-	//	Vector2(T x, T y);
-
-	//public:
-	//	T x_;
-	//	T y_;
-
-	//public:
-	//	static Vector2 zero()
-	//};
-
 	struct Color
 	{
 	};
@@ -61,11 +46,11 @@ namespace bk
 
 		virtual void save_to_file(const char * path) = 0;
 		virtual void load_from_file(const char * path, const int& width, const int& height) = 0;
-	
+
 	protected:
 		RawImage();
 		RawImage(const int& width, const int& height);
-	
+
 	protected:
 		int width_;
 		int height_;
@@ -129,23 +114,13 @@ namespace bk
 	template<typename TColor>
 	inline void RawImage<TColor>::copy_pixels_from(const RawImage<TColor>& source)
 	{
-		for (size_t i = 0; i < size_; ++i)
-		{
-			this->image_[i] = source.image_[i];
-		}
-
-		//memset(this->image_, source.image_, sizeof(TColor) * size_);
+		std::copy(source.image_, source.image_ + size_ + 1, this->image_);
 	}
 
 	template<typename TColor>
 	inline void RawImage<TColor>::copy_pixels_from(const RawImage<TColor>& source, size_t index, size_t size)
 	{
-		for (size_t i = index; i < size; ++i)
-		{
-			this->image_[i] = source.image_[i];
-		}
-
-		//memset((this->image_ + index), (source.image_ + index), sizeof(*source.image_) * size);
+		std::copy(source.image_ + index, source.image_ + index + size + 1, this->image_ + index);
 	}
 
 } // bk
