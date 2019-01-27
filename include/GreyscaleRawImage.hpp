@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+#include "Color.hpp"
 #include "RawImage.hpp"
 
 namespace bk

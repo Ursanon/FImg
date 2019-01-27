@@ -23,7 +23,7 @@ namespace bk
 	struct Rating
 	{
 		size_t index;
-		float rate;
+		double rate;
 	};
 
     class GeneticDrawer

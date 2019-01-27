@@ -15,14 +15,14 @@ namespace bk
 	{
 		//todo: remove vectors?
 		current_bests_ = std::vector<GreyscaleRawImage*>();
-		for (int i = 0; i < settings.bests_count; ++i)
+		for (size_t i = 0; i < settings.bests_count; ++i)
 		{
 			current_bests_.push_back(new GreyscaleRawImage(target.get_width(), target.get_height()));
 		}
 
 		//todo: remove vectors?
 		speciments_ = std::vector<GreyscaleRawImage*>();
-		for (int i = 0; i < settings.speciments_count; ++i)
+		for (size_t i = 0; i < settings.speciments_count; ++i)
 		{
 			speciments_.push_back(new GreyscaleRawImage(target.get_width(), target.get_height()));
 		}
@@ -30,13 +30,13 @@ namespace bk
 
 	GeneticDrawer::~GeneticDrawer()
 	{
-		for (int i = 0; i < settings_.bests_count; ++i)
+		for (size_t i = 0; i < settings_.bests_count; ++i)
 		{
 			delete current_bests_[i];
 			current_bests_[i] = nullptr;
 		}
 
-		for (int i = 0; i < settings_.speciments_count; ++i)
+		for (size_t i = 0; i < settings_.speciments_count; ++i)
 		{
 			delete speciments_[i];
 			speciments_[i] = nullptr;
@@ -95,11 +95,10 @@ namespace bk
 			std::cout << "\ncross time: " << secs.count() << " [s]";
 #endif
 			std::vector<std::thread> threads;
-			for (int i = 0; i < settings_.speciments_count; ++i)
+			for (size_t i = 0; i < settings_.speciments_count; ++i)
 			{
 				int id = i;
 				threads.push_back(std::thread(&GeneticDrawer::mutate, this, id));
-				//mutate(i);
 			}
 
 			for (auto&& t : threads)
@@ -111,7 +110,7 @@ namespace bk
 
 			if (generation_number % 100 == 0)
 			{
-				printf("\nsaving : %u generation...", generation_number);
+				printf("\nsaving : %llu generation...", generation_number);
 
 				std::string output_path = output_dir_;
 				output_path.append("/");
@@ -196,7 +195,7 @@ namespace bk
 		//todo: benchmark time!
 		sort_ranking(rating, settings_.speciments_count);
 
-		for (int i = 0; i < settings_.bests_count; ++i)
+		for (size_t i = 0; i < settings_.bests_count; ++i)
 		{
 			current_bests_[i]->copy_pixels_from(*speciments_[rating[i].index]);
 		}
@@ -209,7 +208,7 @@ namespace bk
 		int part_gene_size = generator_() % target_.get_size();
 		int rest_gene_size = target_.get_size() - part_gene_size;
 
-		for (int i = 0; i < settings_.speciments_count; ++i)
+		for (size_t i = 0; i < settings_.speciments_count; ++i)
 		{
 			int parent = i % settings_.bests_count;
 			speciments_[i]->copy_pixels_from(*current_bests_[parent], 0, part_gene_size);
