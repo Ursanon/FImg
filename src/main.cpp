@@ -1,7 +1,6 @@
 #include <string>
 
-#include "GeneticDrawer.hpp"
-#include "GreyscaleRawImage.hpp"
+#include "GreyscaleDrawer.hpp"
 
 int main(int argc, char** args)
 {
@@ -15,11 +14,11 @@ int main(int argc, char** args)
 	//const char * input_path = args[3];
 	//const char * output_dir = args[3];
 
-	bk::GreyscaleRawImage image;
+	bk::RawImage<bk::GreyscaleColor> image;
 	image.load_from_file(input_path, width, height);
 
 	bk::GeneticDrawerSettings settings(350, 2);
-	bk::GeneticDrawer drawer(image, settings, output_dir);
+	bk::GreyscaleDrawer drawer(image, settings, output_dir);
 
 	drawer.start();
 

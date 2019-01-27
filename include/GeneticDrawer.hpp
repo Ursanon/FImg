@@ -5,20 +5,20 @@
 #include <vector>
 #include <random>
 
-#include "GreyscaleRawImage.hpp"
+#include "RawImage.hpp"
 
 namespace bk
 {
-    struct GeneticDrawerSettings
-    {
-        GeneticDrawerSettings(uint32_t speciments, uint32_t bests)
-            : speciments_count(speciments), bests_count(bests) 
-        {
-        }
+	struct GeneticDrawerSettings
+	{
+		GeneticDrawerSettings(uint32_t speciments, uint32_t bests)
+			: speciments_count(speciments), bests_count(bests)
+		{
+		}
 
-        uint32_t speciments_count;
-        uint32_t bests_count;
-    };
+		uint32_t speciments_count;
+		uint32_t bests_count;
+	};
 
 	struct Rating
 	{
@@ -26,31 +26,132 @@ namespace bk
 		double rate;
 	};
 
-    class GeneticDrawer
-    {
-        public:
-            GeneticDrawer(const GreyscaleRawImage& target, const GeneticDrawerSettings settings, const char* output_dir);
-            ~GeneticDrawer();
-            void start();
+	template <typename TColor>
+	class GeneticDrawer
+	{
+	public:
+		virtual void start();
 
-        private:
-            void mutate(int id);
-			void evaluate();
-            void cross_over();
+	protected:
+		GeneticDrawer(const RawImage<TColor>& target, const GeneticDrawerSettings settings, const char* output_dir);
+		~GeneticDrawer();
 
-			void sort_ranking(Rating * rating, size_t elements_count);
+		virtual void mutate() = 0;
+		virtual void evaluate() = 0;
+		virtual void cross_over();
 
-        private:
-			std::mt19937 generator_;
+		void sort_ranking(Rating * rating, size_t elements_count);
 
-            GeneticDrawerSettings settings_;
-            std::string output_dir_;
+	protected:
+		std::mt19937 generator_ = std::mt19937(std::random_device()());
 
-			std::vector<GreyscaleRawImage*> current_bests_;
-			std::vector<GreyscaleRawImage*> speciments_;
+		GeneticDrawerSettings settings_;
+		std::string output_dir_;
 
-			GreyscaleRawImage target_;
-    };
+		std::vector<RawImage<TColor>*> current_bests_;
+		std::vector<RawImage<TColor>*> speciments_;
+
+		RawImage<TColor> target_;
+	};
+
+	template<typename TColor>
+	void GeneticDrawer<TColor>::start()
+	{
+		bool in_progress = true;
+		uint64_t generation_number = 0;
+
+		while (in_progress)
+		{
+			cross_over();
+
+			mutate();
+
+			evaluate();
+
+			//todo: extract to method
+			if (generation_number % 100 == 0)
+			{
+				printf("\nsaving : %llu generation...", generation_number);
+
+				std::string output_path = output_dir_;
+				output_path.append("/");
+				output_path.append(std::to_string(generation_number));
+				output_path.append(".raw");
+
+				current_bests_[0]->save_to_file(output_path.c_str());
+			}
+
+			++generation_number;
+		}
+	}
+
+	template<typename TColor>
+	GeneticDrawer<TColor>::GeneticDrawer(const RawImage<TColor>& target, const GeneticDrawerSettings settings, const char * output_dir)
+		: target_(target),
+		output_dir_(output_dir),
+		settings_(settings)
+	{
+		//todo: remove vectors?
+		current_bests_ = std::vector<RawImage<TColor>*>();
+		for (size_t i = 0; i < settings.bests_count; ++i)
+		{
+			current_bests_.push_back(new RawImage<TColor>(target.get_width(), target.get_height()));
+		}
+
+		//todo: remove vectors?
+		speciments_ = std::vector<RawImage<TColor>*>();
+		for (size_t i = 0; i < settings.speciments_count; ++i)
+		{
+			speciments_.push_back(new RawImage<TColor>(target.get_width(), target.get_height()));
+		}
+	}
+
+	template<typename TColor>
+	GeneticDrawer<TColor>::~GeneticDrawer()
+	{
+		for (size_t i = 0; i < settings_.bests_count; ++i)
+		{
+			delete current_bests_[i];
+			current_bests_[i] = nullptr;
+		}
+
+		for (size_t i = 0; i < settings_.speciments_count; ++i)
+		{
+			delete speciments_[i];
+			speciments_[i] = nullptr;
+		}
+	}
+
+	template <typename TColor>
+	void GeneticDrawer<TColor>::cross_over()
+	{
+		size_t part_gene_size = generator_() % target_.get_size();
+		size_t rest_gene_size = target_.get_size() - part_gene_size;
+
+		for (size_t i = 0; i < settings_.speciments_count; ++i)
+		{
+			int parent = i % settings_.bests_count;
+			speciments_[i]->copy_pixels_from(*current_bests_[parent], 0, part_gene_size);
+			speciments_[i]->copy_pixels_from(*current_bests_[parent], part_gene_size, rest_gene_size);
+		}
+	}
+	template<typename TColor>
+	inline void GeneticDrawer<TColor>::sort_ranking(Rating * rating, size_t elements_count)
+	{
+		Rating temp;
+		for (size_t i = 1; i < elements_count; ++i)
+		{
+			temp = rating[i];
+
+			int j = i - 1;
+			while (temp.rate < rating[j].rate && j >= 0)
+			{
+				rating[j + 1] = rating[j];
+				j--;
+			}
+			rating[j + 1] = temp;
+		}
+	}
 }
 
 #endif
