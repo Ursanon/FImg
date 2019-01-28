@@ -14,13 +14,13 @@ namespace bk
 
 	void GreyscaleDrawer::mutate()
 	{
-		for (size_t i = 0; i < settings_.speciments_count; ++i)
+		size_t maxX = target_->get_width() - 1;
+		size_t maxY = target_->get_height() - 1;
+
+		for (size_t i = 0; i < settings_.specimens_count; ++i)
 		{
 			GreyscaleColor new_color;
 			new_color.greyscale = generator_() % 255;
-
-			size_t maxX = target_.get_width() - 1;
-			size_t maxY = target_.get_height() - 1;
 
 			size_t start_x = generator_() % maxX;
 			size_t x_len = generator_() % (maxX - start_x) + 1;
@@ -39,7 +39,7 @@ namespace bk
 					size_t pixel_y = start_x + k;
 
 					GreyscaleColor pixel_color = GreyscaleColor::combine(parentImage->get_pixel(pixel_x, pixel_y), new_color);
-					speciments_[i]->set_pixel(pixel_x, pixel_y, pixel_color);
+					specimens_[i]->set_pixel(pixel_x, pixel_y, pixel_color);
 				}
 			}
 		}
@@ -50,20 +50,20 @@ namespace bk
 #ifdef BENCHMARK_TIME
 		time_end = std::chrono::system_clock::now();
 #endif
-			Rating* rating = new Rating[settings_.speciments_count];
+			Rating* rating = new Rating[settings_.specimens_count];
 			
 			std::vector<std::thread> threads;
-			for (size_t i = 0; i < settings_.speciments_count; ++i)
+			for (size_t i = 0; i < settings_.specimens_count; ++i)
 			{
 				threads.push_back(std::thread([&rating, this, i]() -> void
 				{
 					double diff = 0.f;
 
-					size_t size = target_.get_size();
+					size_t size = target_->get_size();
 					for (size_t j = 0; j < size; ++j)
 					{
-						double a = speciments_[i]->get_pixel(j).greyscale;
-						double b = target_.get_pixel(j).greyscale;
+						double a = specimens_[i]->get_pixel(j).greyscale;
+						double b = target_->get_pixel(j).greyscale;
 						diff += (a - b) * (a - b);
 					}
 
@@ -84,11 +84,11 @@ namespace bk
 #endif
 
 			//todo: benchmark time!
-			sort_ranking(rating, settings_.speciments_count);
+			sort_ranking(rating, settings_.specimens_count);
 
 			for (size_t i = 0; i < settings_.bests_count; ++i)
 			{
-				current_bests_[i]->copy_pixels_from(*speciments_[rating[i].index]);
+				current_bests_[i]->copy_pixels_from(*specimens_[rating[i].index]);
 			}
 
 			delete[] rating;

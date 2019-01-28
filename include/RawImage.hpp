@@ -2,6 +2,8 @@
 #define RAW_IMAGE_HPP
 
 #include <cstdint>
+#include <stdexcept>
+
 #include "Color.hpp"
 
 namespace bk
@@ -26,8 +28,8 @@ namespace bk
 		virtual const int get_height() const;
 		virtual const int get_width() const;
 
-		virtual void save_to_file(const char * path);
-		virtual void load_from_file(const char * path, const int& width, const int& height);
+		virtual bool save_to_file(const char * path);
+		virtual bool load_from_file(const char * path, const int& width, const int& height);
 
 	private:
 		bool validate_index(const uint32_t index) const;
@@ -72,8 +74,7 @@ namespace bk
 	{
 		if (!validate_index(index))
 		{
-			printf("\nwrong index!");
-			//throw std::out_of_range("");
+			throw std::out_of_range("Set pixel index was outside of image");
 		}
 
 		*(image_ + index) = color;
@@ -90,9 +91,7 @@ namespace bk
 	{
 		if (!validate_index(index))
 		{
-			printf("\nwrong index!");
-
-			//throw std::out_of_range("");
+			throw std::out_of_range("Get pixel index was outside of image");
 		}
 
 		return *(image_ + index);
@@ -117,25 +116,22 @@ namespace bk
 	}
 
 	template<typename TColor>
-	void RawImage<TColor>::save_to_file(const char * path)
+	bool RawImage<TColor>::save_to_file(const char * path)
 	{
 		FILE * file = fopen(path, write_mode_);
 		if (file == NULL)
 		{
-			//todo: add error handling
-			printf("Cant save: file null!");
-			return;
+			return false;
 		}
 
 		fwrite(image_, sizeof(TColor), size_, file);
-
 		fclose(file);
 
-		printf("saved under: %s!", path);
+		return true;
 	}
 
 	template<typename TColor>
-	void RawImage<TColor>::load_from_file(const char * path, const int & width, const int & height)
+	bool RawImage<TColor>::load_from_file(const char * path, const int & width, const int & height)
 	{
 		width_ = width;
 		height_ = height;
@@ -155,13 +151,14 @@ namespace bk
 		FILE * file = fopen(path, read_mode_);
 		if (file == NULL)
 		{
-			printf("can't load!");
-			return;
+			return false;
 		}
 
 		fread(image_, sizeof(TColor), size_, file);
 
 		fclose(file);
+
+		return true;
 	}
 
 	template<typename TColor>

@@ -12,11 +12,11 @@ namespace bk
 	struct GeneticDrawerSettings
 	{
 		GeneticDrawerSettings(uint32_t speciments, uint32_t bests)
-			: speciments_count(speciments), bests_count(bests)
+			: specimens_count(speciments), bests_count(bests)
 		{
 		}
 
-		uint32_t speciments_count;
+		uint32_t specimens_count;
 		uint32_t bests_count;
 	};
 
@@ -49,9 +49,9 @@ namespace bk
 		std::string output_dir_;
 
 		std::vector<RawImage<TColor>*> current_bests_;
-		std::vector<RawImage<TColor>*> speciments_;
+		std::vector<RawImage<TColor>*> specimens_;
 
-		RawImage<TColor> target_;
+		const RawImage<TColor>* target_;
 	};
 
 	template<typename TColor>
@@ -87,7 +87,7 @@ namespace bk
 
 	template<typename TColor>
 	GeneticDrawer<TColor>::GeneticDrawer(const RawImage<TColor>& target, const GeneticDrawerSettings settings, const char * output_dir)
-		: target_(target),
+		: target_(&target),
 		output_dir_(output_dir),
 		settings_(settings)
 	{
@@ -99,10 +99,10 @@ namespace bk
 		}
 
 		//todo: remove vectors?
-		speciments_ = std::vector<RawImage<TColor>*>();
-		for (size_t i = 0; i < settings.speciments_count; ++i)
+		specimens_ = std::vector<RawImage<TColor>*>();
+		for (size_t i = 0; i < settings.specimens_count; ++i)
 		{
-			speciments_.push_back(new RawImage<TColor>(target.get_width(), target.get_height()));
+			specimens_.push_back(new RawImage<TColor>(target.get_width(), target.get_height()));
 		}
 	}
 
@@ -115,24 +115,24 @@ namespace bk
 			current_bests_[i] = nullptr;
 		}
 
-		for (size_t i = 0; i < settings_.speciments_count; ++i)
+		for (size_t i = 0; i < settings_.specimens_count; ++i)
 		{
-			delete speciments_[i];
-			speciments_[i] = nullptr;
+			delete specimens_[i];
+			specimens_[i] = nullptr;
 		}
 	}
 
 	template <typename TColor>
 	void GeneticDrawer<TColor>::cross_over()
 	{
-		size_t part_gene_size = generator_() % target_.get_size();
-		size_t rest_gene_size = target_.get_size() - part_gene_size;
+		size_t part_gene_size = generator_() % target_->get_size();
+		size_t rest_gene_size = target_->get_size() - part_gene_size;
 
-		for (size_t i = 0; i < settings_.speciments_count; ++i)
+		for (size_t i = 0; i < settings_.specimens_count; ++i)
 		{
 			int parent = i % settings_.bests_count;
-			speciments_[i]->copy_pixels_from(*current_bests_[parent], 0, part_gene_size);
-			speciments_[i]->copy_pixels_from(*current_bests_[parent], part_gene_size, rest_gene_size);
+			specimens_[i]->copy_pixels_from(*current_bests_[parent], 0, part_gene_size);
+			specimens_[i]->copy_pixels_from(*current_bests_[parent], part_gene_size, rest_gene_size);
 		}
 	}
 	template<typename TColor>
