@@ -16,20 +16,20 @@ namespace bk
 		RawImage(const int& width, const int& height);
 		~RawImage();
 
-		virtual void copy_pixels_from(const RawImage& source);
-		virtual void copy_pixels_from(const RawImage& source, const size_t index, const size_t size);
+		void copy_pixels_from(const RawImage& source);
+		void copy_pixels_from(const RawImage& source, const size_t index, const size_t size);
 
-		virtual void set_pixel(const uint32_t x, const uint32_t y, const TColor& color);
-		virtual void set_pixel(const uint32_t index, const TColor& color);
+		void set_pixel(const uint32_t x, const uint32_t y, const TColor& color);
+		void set_pixel(const uint32_t index, const TColor& color);
 
-		virtual const TColor get_pixel(const uint32_t x, const uint32_t y) const;
-		virtual const TColor get_pixel(const uint32_t index) const;
-		virtual const size_t get_size() const;
-		virtual const int get_height() const;
-		virtual const int get_width() const;
+		const TColor get_pixel(const uint32_t x, const uint32_t y) const;
+		const TColor get_pixel(const uint32_t index) const;
+		const size_t get_size() const;
+		const int get_height() const;
+		const int get_width() const;
 
-		virtual bool save_to_file(const char * path);
-		virtual bool load_from_file(const char * path, const int& width, const int& height);
+		bool save_to_file(const char * path);
+		bool load_from_file(const char * path, const int& width, const int& height);
 
 	private:
 		bool validate_index(const uint32_t index) const;
