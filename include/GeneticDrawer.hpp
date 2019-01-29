@@ -42,7 +42,7 @@ namespace bk
 		virtual void mutate() = 0;
 		virtual void evaluate() = 0;
 		virtual void cross_over();
-		virtual void save_best_specimen();
+		virtual void save_best_specimen(const int& current_generation);
 
 		void sort_ranking(Rating * rating, size_t elements_count);
 
@@ -73,12 +73,12 @@ namespace bk
 
 			evaluate();
 
+			++generation_number;
+
 			if (generation_number % settings_.save_interval == 0)
 			{
-				save_best_specimen()
+				save_best_specimen(generation_number);
 			}
-
-			++generation_number;
 		}
 	}
 
@@ -133,13 +133,13 @@ namespace bk
 		}
 	}
 	template<typename TColor>
-	void GeneticDrawer<TColor>::save_best_specimen()
+	void GeneticDrawer<TColor>::save_best_specimen(const int& current_generation)
 	{
-		printf("\nsaving : %llu generation...", generation_number);
+		printf("\nsaving : %llu generation...", current_generation);
 
 		std::string output_path = output_dir_;
 		output_path.append("/");
-		output_path.append(std::to_string(generation_number));
+		output_path.append(std::to_string(current_generation));
 		output_path.append(raw_image_extension_);
 
 		current_bests_[0]->save_to_file(output_path.c_str());
