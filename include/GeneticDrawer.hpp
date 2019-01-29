@@ -42,7 +42,7 @@ namespace bk
 		virtual void mutate() = 0;
 		virtual void evaluate() = 0;
 		virtual void cross_over();
-		virtual void save_best_specimen(const int& current_generation);
+		virtual void save_best_specimen(const uint64_t& current_generation);
 
 		void sort_ranking(Rating * rating, size_t elements_count);
 
@@ -133,7 +133,7 @@ namespace bk
 		}
 	}
 	template<typename TColor>
-	void GeneticDrawer<TColor>::save_best_specimen(const int& current_generation)
+	void GeneticDrawer<TColor>::save_best_specimen(const uint64_t& current_generation)
 	{
 		printf("\nsaving : %llu generation...", current_generation);
 
