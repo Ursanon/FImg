@@ -118,9 +118,11 @@ namespace bk
 	template<typename TColor>
 	bool RawImage<TColor>::save_to_file(const char * path)
 	{
-		FILE * file = fopen(path, write_mode_);
-		if (file == NULL)
+		FILE * file = nullptr;
+		errno_t error = fopen_s(&file, path, write_mode_);
+		if (error != 0)
 		{
+			perror(path);
 			return false;
 		}
 
@@ -147,10 +149,11 @@ namespace bk
 			}
 			image_ = new TColor[size_];
 		}
-
-		FILE * file = fopen(path, read_mode_);
-		if (file == NULL)
+		FILE * file = nullptr;
+		errno_t error = fopen_s(&file, path, read_mode_);
+		if (error != 0)
 		{
+			perror(path);
 			return false;
 		}
 

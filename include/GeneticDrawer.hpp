@@ -15,14 +15,16 @@ namespace bk
 	public:
 		struct Settings
 		{
-			Settings(uint32_t speciments, uint32_t bests)
-				: specimens_count(speciments), bests_count(bests)
+			Settings(uint32_t speciments, uint32_t bests, uint32_t dump_interval)
+				: specimens_count(speciments), bests_count(bests), save_interval(dump_interval)
 			{
 			}
 
 			uint32_t specimens_count;
 			uint32_t bests_count;
+			uint32_t save_interval;
 		};
+
 	protected:
 		struct Rating
 		{
@@ -40,10 +42,12 @@ namespace bk
 		virtual void mutate() = 0;
 		virtual void evaluate() = 0;
 		virtual void cross_over();
+		virtual void save_best_specimen();
 
 		void sort_ranking(Rating * rating, size_t elements_count);
 
 	protected:
+		const char * raw_image_extension_ = ".raw";
 		std::mt19937 generator_ = std::mt19937(std::random_device()());
 
 		Settings settings_;
@@ -69,17 +73,9 @@ namespace bk
 
 			evaluate();
 
-			//todo: extract to method
-			if (generation_number % 100 == 0)
+			if (generation_number % settings_.save_interval == 0)
 			{
-				printf("\nsaving : %llu generation...", generation_number);
-
-				std::string output_path = output_dir_;
-				output_path.append("/");
-				output_path.append(std::to_string(generation_number));
-				output_path.append(".raw");
-
-				current_bests_[0]->save_to_file(output_path.c_str());
+				save_best_specimen()
 			}
 
 			++generation_number;
@@ -136,6 +132,19 @@ namespace bk
 			specimens_[i]->copy_pixels_from(*current_bests_[parent], part_gene_size, rest_gene_size);
 		}
 	}
+	template<typename TColor>
+	void GeneticDrawer<TColor>::save_best_specimen()
+	{
+		printf("\nsaving : %llu generation...", generation_number);
+
+		std::string output_path = output_dir_;
+		output_path.append("/");
+		output_path.append(std::to_string(generation_number));
+		output_path.append(raw_image_extension_);
+
+		current_bests_[0]->save_to_file(output_path.c_str());
+	}
+
 	template<typename TColor>
 	inline void GeneticDrawer<TColor>::sort_ranking(Rating * rating, size_t elements_count)
 	{
