@@ -1,6 +1,7 @@
 #include <string>
 
 #include "GreyscaleDrawer.hpp"
+#include "RawImage.hpp"
 
 int main(int argc, char** args)
 {
@@ -11,13 +12,14 @@ int main(int argc, char** args)
 	const char * input_path = "./input/Raw-Lenna-256.raw";
 	const char * output_dir = "./output/";
 
-	bk::RawImage<bk::GreyscaleColor>* image = new bk::RawImage<bk::GreyscaleColor>(width, height);
+	bk::GreyscaleRawImage* image = new bk::GreyscaleRawImage(width, height);
+	bk::RawImage<int> x;
 	image->load_from_file(input_path, width, height);
 
-	bk::GeneticDrawerSettings settings(specimens_count, parents_count);
-	bk::GreyscaleDrawer drawer(*image, settings, output_dir);
+	bk::GreyscaleDrawer::Settings settings(specimens_count, parents_count);
+	bk::GreyscaleDrawer* drawer = new bk::GreyscaleDrawer(*image, settings, output_dir);
 
-	drawer.start();
+	drawer->start();
 
 	return 0;
 }

@@ -9,32 +9,33 @@
 
 namespace bk
 {
-	struct GeneticDrawerSettings
-	{
-		GeneticDrawerSettings(uint32_t speciments, uint32_t bests)
-			: specimens_count(speciments), bests_count(bests)
-		{
-		}
-
-		uint32_t specimens_count;
-		uint32_t bests_count;
-	};
-
-	struct Rating
-	{
-		size_t index;
-		double rate;
-	};
-
 	template <typename TColor>
 	class GeneticDrawer
 	{
 	public:
+		struct Settings
+		{
+			Settings(uint32_t speciments, uint32_t bests)
+				: specimens_count(speciments), bests_count(bests)
+			{
+			}
+
+			uint32_t specimens_count;
+			uint32_t bests_count;
+		};
+	protected:
+		struct Rating
+		{
+			size_t index;
+			double rate;
+		};
+
+	public:
 		virtual void start();
 
 	protected:
-		GeneticDrawer(const RawImage<TColor>& target, const GeneticDrawerSettings settings, const char* output_dir);
-		~GeneticDrawer();
+		GeneticDrawer(const RawImage<TColor>& target, const Settings settings, const char* output_dir);
+		virtual ~GeneticDrawer();
 
 		virtual void mutate() = 0;
 		virtual void evaluate() = 0;
@@ -45,7 +46,7 @@ namespace bk
 	protected:
 		std::mt19937 generator_ = std::mt19937(std::random_device()());
 
-		GeneticDrawerSettings settings_;
+		Settings settings_;
 		std::string output_dir_;
 
 		std::vector<RawImage<TColor>*> current_bests_;
@@ -86,7 +87,7 @@ namespace bk
 	}
 
 	template<typename TColor>
-	GeneticDrawer<TColor>::GeneticDrawer(const RawImage<TColor>& target, const GeneticDrawerSettings settings, const char * output_dir)
+	GeneticDrawer<TColor>::GeneticDrawer(const RawImage<TColor>& target, const Settings settings, const char * output_dir)
 		: target_(&target),
 		output_dir_(output_dir),
 		settings_(settings)

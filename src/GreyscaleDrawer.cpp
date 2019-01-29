@@ -7,7 +7,7 @@
 
 namespace bk
 {
-	GreyscaleDrawer::GreyscaleDrawer(const RawImage<GreyscaleColor>& target, GeneticDrawerSettings settings, const char* output_dir)
+	GreyscaleDrawer::GreyscaleDrawer(const RawImage<GreyscaleColor>& target, Settings settings, const char* output_dir)
 		: GeneticDrawer<GreyscaleColor>(target, settings, output_dir)
 	{
 	}

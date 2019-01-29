@@ -8,7 +8,7 @@ namespace bk
     class GreyscaleDrawer : public GeneticDrawer<GreyscaleColor>
     {
         public:
-            GreyscaleDrawer(const RawImage<GreyscaleColor>& target, GeneticDrawerSettings settings, const char* output_dir);
+            GreyscaleDrawer(const RawImage<GreyscaleColor>& target, Settings settings, const char* output_dir);
 
         private:
             virtual void mutate() override;

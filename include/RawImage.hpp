@@ -14,7 +14,7 @@ namespace bk
 	public:
 		RawImage();
 		RawImage(const int& width, const int& height);
-		~RawImage();
+		virtual ~RawImage();
 
 		void copy_pixels_from(const RawImage& source);
 		void copy_pixels_from(const RawImage& source, const size_t index, const size_t size);
@@ -44,7 +44,7 @@ namespace bk
 		TColor* image_ = nullptr;
 	};
 
-	//typedef RawImage<GreyscaleColor> GreyscaleRawImage;
+	typedef RawImage<GreyscaleColor> GreyscaleRawImage;
 
 	template<typename TColor>
 	RawImage<TColor>::RawImage() { }
