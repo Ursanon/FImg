@@ -74,15 +74,7 @@ namespace bk
 		for (auto&& t : threads)
 			t.join();
 
-#ifdef BENCHMARK_TIME
-		time_end = std::chrono::system_clock::now();
-		auto dur = time_end - time_start;
-		auto secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
-		std::cout << "\ncalc rating time: " << secs.count() << " [s]";
-#endif
-
-		//todo: benchmark time!
-		sort_ranking(rating_, settings_.specimens_count);
+		std::sort(rating_, rating_ + settings_.specimens_count, [](const Rating& a, const Rating& b) -> bool { return a.rate > b.rate; });
 
 		for (size_t i = 0; i < settings_.bests_count; ++i)
 		{
