@@ -49,49 +49,45 @@ namespace bk
 	{
 #ifdef BENCHMARK_TIME
 		time_end = std::chrono::system_clock::now();
-#endif
-			Rating* rating = new Rating[settings_.specimens_count];
-			
-			std::vector<std::thread> threads;
-			for (size_t i = 0; i < settings_.specimens_count; ++i)
+#endif			
+		std::vector<std::thread> threads;
+		for (size_t i = 0; i < settings_.specimens_count; ++i)
+		{
+			threads.push_back(std::thread([this, i]() -> void
 			{
-				threads.push_back(std::thread([&rating, this, i]() -> void
+				double diff = 0.f;
+
+				size_t size = target_->get_size();
+				for (size_t j = 0; j < size; ++j)
 				{
-					double diff = 0.f;
+					double a = specimens_[i]->get_pixel(j).greyscale;
+					double b = target_->get_pixel(j).greyscale;
+					diff += (a - b) * (a - b);
+				}
 
-					size_t size = target_->get_size();
-					for (size_t j = 0; j < size; ++j)
-					{
-						double a = specimens_[i]->get_pixel(j).greyscale;
-						double b = target_->get_pixel(j).greyscale;
-						diff += (a - b) * (a - b);
-					}
+				rating_[i].index = i;
+				rating_[i].rate = diff;
+			})
+			);
+		}
 
-					rating[i].index = i;
-					rating[i].rate = diff;
-				})
-				);
-			}
-
-			for (auto&& t : threads)
-				t.join();
+		for (auto&& t : threads)
+			t.join();
 
 #ifdef BENCHMARK_TIME
-			time_end = std::chrono::system_clock::now();
-			auto dur = time_end - time_start;
-			auto secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
-			std::cout << "\ncalc rating time: " << secs.count() << " [s]";
+		time_end = std::chrono::system_clock::now();
+		auto dur = time_end - time_start;
+		auto secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
+		std::cout << "\ncalc rating time: " << secs.count() << " [s]";
 #endif
 
-			//todo: benchmark time!
-			sort_ranking(rating, settings_.specimens_count);
+		//todo: benchmark time!
+		sort_ranking(rating_, settings_.specimens_count);
 
-			for (size_t i = 0; i < settings_.bests_count; ++i)
-			{
-				current_bests_[i]->copy_pixels_from(*specimens_[rating[i].index]);
-			}
-
-			delete[] rating;
+		for (size_t i = 0; i < settings_.bests_count; ++i)
+		{
+			current_bests_[i]->copy_pixels_from(*specimens_[rating_[i].index]);
+		}
 	}
 
 #ifdef BENCHMARK_TIME

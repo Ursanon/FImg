@@ -55,6 +55,7 @@ namespace bk
 
 		std::vector<RawImage<TColor>*> current_bests_;
 		std::vector<RawImage<TColor>*> specimens_;
+		Rating* rating_;
 
 		const RawImage<TColor>* target_;
 	};
@@ -101,6 +102,8 @@ namespace bk
 		{
 			specimens_.push_back(new RawImage<TColor>(target.get_width(), target.get_height()));
 		}
+
+		rating_ = new Rating[settings_.specimens_count];
 	}
 
 	template<typename TColor>
@@ -117,6 +120,9 @@ namespace bk
 			delete specimens_[i];
 			specimens_[i] = nullptr;
 		}
+
+		delete[] rating_;
+		rating_ = nullptr;
 	}
 
 	template <typename TColor>
