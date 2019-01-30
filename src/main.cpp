@@ -22,9 +22,9 @@ int main(int argc, char** args)
 	}
 
 	bk::GreyscaleDrawer::Settings settings(specimens_count, parents_count, save_interval);
-	bk::GreyscaleDrawer* drawer = new bk::GreyscaleDrawer(*image, settings, output_dir);
+	bk::GreyscaleDrawer drawer = bk::GreyscaleDrawer(*image, settings, output_dir);
 
-	drawer->start();
+	drawer.start();
 
 	return 0;
 }

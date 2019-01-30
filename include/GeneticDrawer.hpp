@@ -44,8 +44,6 @@ namespace bk
 		virtual void cross_over();
 		virtual void save_best_specimen(const uint64_t& current_generation);
 
-		void sort_ranking(Rating * rating, size_t elements_count);
-
 	protected:
 		const char * raw_image_extension_ = ".raw";
 		std::mt19937 generator_ = std::mt19937(std::random_device()());
@@ -89,15 +87,13 @@ namespace bk
 		output_dir_(output_dir),
 		settings_(settings)
 	{
-		//todo: remove vectors?
-		current_bests_ = std::vector<RawImage<TColor>*>();
+		current_bests_.reserve(settings.bests_count);
 		for (size_t i = 0; i < settings.bests_count; ++i)
 		{
 			current_bests_.push_back(new RawImage<TColor>(target.get_width(), target.get_height()));
 		}
 
-		//todo: remove vectors?
-		specimens_ = std::vector<RawImage<TColor>*>();
+		specimens_.reserve(settings.specimens_count);
 		for (size_t i = 0; i < settings.specimens_count; ++i)
 		{
 			specimens_.push_back(new RawImage<TColor>(target.get_width(), target.get_height()));
@@ -112,13 +108,11 @@ namespace bk
 		for (size_t i = 0; i < settings_.bests_count; ++i)
 		{
 			delete current_bests_[i];
-			current_bests_[i] = nullptr;
 		}
 
-		for (size_t i = 0; i < settings_.specimens_count; ++i)
+		for (size_t i = 0; i < settings_.specimens_count; --i)
 		{
 			delete specimens_[i];
-			specimens_[i] = nullptr;
 		}
 
 		delete[] rating_;
@@ -149,24 +143,6 @@ namespace bk
 		output_path.append(raw_image_extension_);
 
 		current_bests_[0]->save_to_file(output_path.c_str());
-	}
-
-	template<typename TColor>
-	inline void GeneticDrawer<TColor>::sort_ranking(Rating * rating, size_t elements_count)
-	{
-		Rating temp;
-		for (size_t i = 1; i < elements_count; ++i)
-		{
-			temp = rating[i];
-
-			int j = i - 1;
-			while (temp.rate < rating[j].rate && j >= 0)
-			{
-				rating[j + 1] = rating[j];
-				j--;
-			}
-			rating[j + 1] = temp;
-		}
 	}
 }
 
