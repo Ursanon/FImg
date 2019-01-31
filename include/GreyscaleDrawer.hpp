@@ -14,6 +14,16 @@ namespace bk
             virtual void mutate() override;
 			virtual void evaluate() override;
     };
+
+	class RGBDrawer : public GeneticDrawer<RGBColor>
+	{
+		public:
+			RGBDrawer(const RawImage<RGBColor>& target, Settings settings, const char* output_dir);
+
+		private:
+			virtual void mutate() override;
+			virtual void evaluate() override;
+	};
 }
 
 #endif
