@@ -11,7 +11,6 @@ namespace bk
             GreyscaleDrawer(const RawImage<GreyscaleColor>& target, Settings settings, const char* output_dir);
 
         private:
-            virtual void mutate() override;
 			virtual void evaluate() override;
     };
 
@@ -21,7 +20,6 @@ namespace bk
 			RGBDrawer(const RawImage<RGBColor>& target, Settings settings, const char* output_dir);
 
 		private:
-			virtual void mutate() override;
 			virtual void evaluate() override;
 	};
 }

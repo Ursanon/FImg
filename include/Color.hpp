@@ -3,22 +3,22 @@
 
 namespace bk
 {
-	struct Color
+	struct GreyscaleColor
 	{
-	};
-
-	struct GreyscaleColor : Color
-	{
-	public:
 		void combine(const GreyscaleColor& rhs)
 		{
 			this->greyscale = (this->greyscale + rhs.greyscale) >> 1;
 		}
 
-		static GreyscaleColor combine(const GreyscaleColor& lhs, const GreyscaleColor& rhs)
+		void fill_with_generator(std::mt19937& generator)
 		{
-			GreyscaleColor result;
-			result.greyscale = (lhs.greyscale + rhs.greyscale) >> 1;
+			greyscale = generator() & 255;
+		}
+
+		static GreyscaleColor peek_combined(const GreyscaleColor& lhs, const GreyscaleColor& rhs)
+		{
+			GreyscaleColor result(lhs);
+			result.combine(rhs);
 
 			return result;
 		}
@@ -27,9 +27,8 @@ namespace bk
 		uint8_t greyscale;
 	};
 
-	struct RGBColor : Color
+	struct RGBColor
 	{
-	public:
 		void combine(const RGBColor& rhs)
 		{
 			this->r = (this->r + rhs.r) >> 1;
@@ -37,12 +36,17 @@ namespace bk
 			this->b = (this->b + rhs.b) >> 1;
 		}
 
-		static RGBColor combine(const RGBColor& lhs, const RGBColor& rhs)
+		void fill_with_generator(std::mt19937& generator)
 		{
-			RGBColor result;
-			result.r = (lhs.r + rhs.r) >> 1;
-			result.g = (lhs.g + rhs.g) >> 1;
-			result.b = (lhs.b + rhs.b) >> 1;
+			r = generator() & 255;
+			g = generator() & 255;
+			b = generator() & 255;
+		}
+
+		static RGBColor peek_combined(const RGBColor& lhs, const RGBColor& rhs)
+		{
+			RGBColor result(lhs);
+			result.combine(rhs);
 
 			return result;
 		}

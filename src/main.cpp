@@ -29,8 +29,8 @@ int main(int argc, char** args)
 	output_path.append(".raw");
 	image->save_to_file(output_path.c_str());
 
-	//bk::GreyscaleDrawer::Settings settings(specimens_count, parents_count, save_interval);
-	bk::RGBDrawer::Settings settings(specimens_count, parents_count, save_interval);
+	//bk::GreyscaleDrawer::Settings settings(specimens_count, parents_count, save_interval, 4);
+	bk::RGBDrawer::Settings settings(specimens_count, parents_count, save_interval, 4);
 	//bk::GreyscaleDrawer drawer(*image, settings, output_dir);
 	bk::RGBDrawer drawer(*image, settings, output_dir);
 
