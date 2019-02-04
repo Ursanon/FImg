@@ -41,11 +41,11 @@ namespace bk
 	public:
 		virtual void start();
 
-	protected:
 		GeneticDrawer(const RawImage<TColor>& target, const Settings settings, const char* output_dir);
 		virtual ~GeneticDrawer();
+	protected:
 
-		virtual void evaluate() = 0;
+		virtual void evaluate();
 		
 		virtual void mutate();
 		virtual void cross_over();
@@ -64,6 +64,9 @@ namespace bk
 
 		const RawImage<TColor>* target_;
 	};
+
+	typedef bk::GeneticDrawer<bk::RGBColor> RGBGeneticDrawer;
+	typedef bk::GeneticDrawer<bk::GreyscaleColor> GreyscaleGeneticDrawer;
 
 	template<typename TColor>
 	void GeneticDrawer<TColor>::start()
@@ -124,6 +127,62 @@ namespace bk
 
 		delete[] rating_;
 		rating_ = nullptr;
+	}
+
+	template<typename TColor>
+	inline void GeneticDrawer<TColor>::evaluate()
+	{
+		size_t elements = settings_.specimens_count / settings_.thread_count;
+		size_t rest = settings_.specimens_count % settings_.thread_count;
+
+		size_t start_index = 0;
+		size_t end_index = 0;
+
+		auto rate = [&](const size_t start, const size_t end) -> void
+		{
+			for (size_t i = start; i < end; ++i)
+			{
+				double diff = 0.f;
+
+				size_t size = target_->get_size();
+				for (size_t j = 0; j < size; ++j)
+				{
+					diff += TColor::compare(specimens_[i]->get_pixel(j), target_->get_pixel(j));
+				}
+
+				rating_[i].index = i;
+				rating_[i].rate = diff;
+			}
+		};
+
+		std::vector<std::thread> threads;
+
+		while (end_index < settings_.specimens_count)
+		{
+			end_index += elements;
+			if (rest != 0)
+			{
+				end_index++;
+				rest--;
+			}
+
+			threads.push_back(std::thread(rate, start_index, end_index));
+
+			start_index += elements;
+		}
+
+		size_t threads_count = threads.size();
+		for (size_t i = 0; i < threads_count; ++i)
+		{
+			threads[i].join();
+		}
+
+		std::sort(rating_, rating_ + settings_.specimens_count, [](const Rating& a, const Rating& b) -> bool { return a.rate < b.rate; });
+
+		for (size_t i = 0; i < settings_.bests_count; ++i)
+		{
+			current_bests_[i]->copy_pixels_from(*specimens_[rating_[i].index]);
+		}
 	}
 
 	template<typename TColor>

@@ -1,6 +1,6 @@
 #include <string>
 
-#include "GreyscaleDrawer.hpp"
+#include "GeneticDrawer.hpp"
 #include "RawImage.hpp"
 
 int main(int argc, char** args)
@@ -14,7 +14,7 @@ int main(int argc, char** args)
 	const char * input_path = "./input/Raw-Lenna-256-rgb.raw";
 	const char * output_dir = "./output/";
 
-	bk::RawImage<bk::RGBColor>* image = new bk::RawImage<bk::RGBColor>(width, height);
+	bk::RGBRawImage* image = new bk::RGBRawImage(width, height);
 	//bk::GreyscaleRawImage* image = new bk::GreyscaleRawImage(width, height);
 	bool image_loaded = image->load_from_file(input_path, width, height);
 	if (!image_loaded)
@@ -29,10 +29,11 @@ int main(int argc, char** args)
 	output_path.append(".raw");
 	image->save_to_file(output_path.c_str());
 
-	//bk::GreyscaleDrawer::Settings settings(specimens_count, parents_count, save_interval, 4);
-	bk::RGBDrawer::Settings settings(specimens_count, parents_count, save_interval, 4);
-	//bk::GreyscaleDrawer drawer(*image, settings, output_dir);
-	bk::RGBDrawer drawer(*image, settings, output_dir);
+	//bk::GreyscaleGeneticDrawer::Settings settings(specimens_count, parents_count, save_interval, 4);
+	//bk::GreyscaleGeneticDrawer drawer(*image, settings, output_dir);
+
+	bk::RGBGeneticDrawer::Settings settings(specimens_count, parents_count, save_interval, 4);
+	bk::RGBGeneticDrawer drawer(*image, settings, output_dir);
 
 	drawer.start();
 

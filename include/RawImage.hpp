@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <stdexcept>
+#include <type_traits>
 
 #include "Color.hpp"
 
@@ -12,6 +13,7 @@ namespace bk
 	class RawImage
 	{
 	public:
+		static_assert(std::is_base_of<Color, TColor>::value, "TColor must inherit from bk::Color");
 		RawImage();
 		RawImage(const int& width, const int& height);
 		virtual ~RawImage();
@@ -45,6 +47,7 @@ namespace bk
 	};
 
 	typedef RawImage<GreyscaleColor> GreyscaleRawImage;
+	typedef RawImage<RGBColor> RGBRawImage;
 
 	template<typename TColor>
 	RawImage<TColor>::RawImage() { }

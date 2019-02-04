@@ -1,9 +1,15 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
+#include <random>
+
 namespace bk
 {
-	struct GreyscaleColor
+	struct Color
+	{
+	};
+
+	struct GreyscaleColor : Color
 	{
 		void combine(const GreyscaleColor& rhs)
 		{
@@ -23,11 +29,16 @@ namespace bk
 			return result;
 		}
 
+		static double compare(const GreyscaleColor& lhs, const GreyscaleColor& rhs)
+		{
+			return (rhs.greyscale - lhs.greyscale) * (rhs.greyscale - lhs.greyscale) / 255.0;
+		}
+
 	public:
 		uint8_t greyscale;
 	};
 
-	struct RGBColor
+	struct RGBColor : Color
 	{
 		void combine(const RGBColor& rhs)
 		{
@@ -49,6 +60,15 @@ namespace bk
 			result.combine(rhs);
 
 			return result;
+		}
+
+		static double compare(const RGBColor& lhs, const RGBColor& rhs)
+		{
+			double r = rhs.r - lhs.r;
+			double g = rhs.g - lhs.g;
+			double bl = rhs.b - lhs.b;
+
+			return (r * r + g * g + bl * bl) / 255.0 / 3.0;
 		}
 
 	public:
