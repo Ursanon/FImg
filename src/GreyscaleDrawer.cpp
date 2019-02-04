@@ -14,17 +14,15 @@ namespace bk
 
 	void GreyscaleDrawer::evaluate()
 	{
-		std::vector<std::thread> threads;
+		size_t elements = settings_.specimens_count / settings_.thread_count;
+		size_t rest = settings_.specimens_count % settings_.thread_count;
 
-		int rest = settings_.specimens_count % settings_.thread_count;
-		int elements = settings_.specimens_count / settings_.thread_count;
+		size_t start_index = 0;
+		size_t end_index = 0;
 
-		int start = 0;
-		int end = 0;
-
-		auto rate = [this](size_t start__, size_t end__) -> void
+		auto rate = [&](const size_t start, const size_t end) -> void
 			{
-				for (size_t i = start__; i < end__; ++i)
+				for (size_t i = start; i < end; ++i)
 				{
 					double diff = 0.f;
 
@@ -41,18 +39,20 @@ namespace bk
 				}
 			};
 
-		while(end < settings_.specimens_count)
+		std::vector<std::thread> threads;
+
+		while(end_index < settings_.specimens_count)
 		{
-			end += elements;
+			end_index += elements;
 			if (rest != 0)
 			{
-				end++;
+				end_index++;
 				rest--;
 			}
 
-			threads.push_back(std::thread(rate, start, end));
+			threads.push_back(std::thread(rate, start_index, end_index));
 
-			start += elements;
+			start_index += elements;
 		}
 
 		size_t threads_count = threads.size();
@@ -76,17 +76,15 @@ namespace bk
 
 	void RGBDrawer::evaluate()
 	{
-		std::vector<std::thread> threads;
+		size_t elements = settings_.specimens_count / settings_.thread_count;
+		size_t rest = settings_.specimens_count % settings_.thread_count;
 
-		int rest = settings_.specimens_count % settings_.thread_count;
-		int elements = settings_.specimens_count / settings_.thread_count;
-
-		int start = 0;
-		int end = 0;
-
-		auto rate = [this](size_t start__, size_t end__) -> void
+		size_t start_index = 0;
+		size_t end_index = 0;
+		
+		auto rate = [&](const size_t start, const size_t end) -> void
 		{
-			for (size_t i = start__; i < end__; ++i)
+			for (size_t i = start; i < end; ++i)
 			{
 				double diff = 0.f;
 
@@ -108,18 +106,20 @@ namespace bk
 			}
 		};
 
-		while (end < settings_.specimens_count)
+		std::vector<std::thread> threads;
+
+		while (end_index < settings_.specimens_count)
 		{
-			end += elements;
+			end_index += elements;
 			if (rest != 0)
 			{
-				end++;
+				end_index++;
 				rest--;
 			}
 
-			threads.push_back(std::thread(rate, start, end));
+			threads.push_back(std::thread(rate, start_index, end_index));
 
-			start += elements;
+			start_index += elements;
 		}
 
 		size_t threads_count = threads.size();

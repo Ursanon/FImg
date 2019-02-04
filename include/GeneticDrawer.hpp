@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <thread>
 
 #include "RawImage.hpp"
 
@@ -18,6 +19,10 @@ namespace bk
 			Settings(uint32_t speciments, uint32_t bests, uint32_t dump_interval, uint32_t thread)
 				: specimens_count(speciments), bests_count(bests), save_interval(dump_interval), thread_count(thread)
 			{
+				if (thread_count == 0)
+				{
+					thread_count = 1;
+				}
 			}
 
 			uint32_t specimens_count;
@@ -127,31 +132,62 @@ namespace bk
 		size_t maxX = target_->get_width() - 1;
 		size_t maxY = target_->get_height() - 1;
 
-		for (size_t i = 0; i < settings_.specimens_count; ++i)
+		auto single_mutate = [&](const size_t start, const size_t end) -> void
 		{
-			TColor new_color;
-			new_color.fill_with_generator(generator_);
-
-			size_t start_x = generator_() % maxX;
-			size_t x_len = generator_() % (maxX - start_x) + 1;
-
-			size_t start_y = generator_() % maxY;
-			size_t y_len = generator_() % (maxY - start_y) + 1;
-
-			size_t parent_index = generator_() % settings_.bests_count;
-			RawImage<TColor>* parentImage = current_bests_[parent_index];
-
-			for (size_t j = 0; j < y_len; ++j)
+			for (size_t i = start; i < end; ++i)
 			{
-				for (size_t k = 0; k < x_len; ++k)
-				{
-					size_t pixel_x = start_y + j;
-					size_t pixel_y = start_x + k;
+				TColor new_color;
+				new_color.fill_with_generator(generator_);
 
-					TColor pixel_color = parentImage->get_pixel(pixel_x, pixel_y);
-					specimens_[i]->set_pixel(pixel_x, pixel_y, TColor::peek_combined(pixel_color, new_color));
+				size_t start_x = generator_() % maxX;
+				size_t x_len = generator_() % (maxX - start_x) + 1;
+
+				size_t start_y = generator_() % maxY;
+				size_t y_len = generator_() % (maxY - start_y) + 1;
+
+				size_t parent_index = generator_() % settings_.bests_count;
+				RawImage<TColor>* parentImage = current_bests_[parent_index];
+
+				for (size_t j = 0; j < y_len; ++j)
+				{
+					for (size_t k = 0; k < x_len; ++k)
+					{
+						size_t pixel_x = start_y + j;
+						size_t pixel_y = start_x + k;
+
+						TColor pixel_color = parentImage->get_pixel(pixel_x, pixel_y);
+						specimens_[i]->set_pixel(pixel_x, pixel_y, TColor::peek_combined(pixel_color, new_color));
+					}
 				}
 			}
+		};
+
+		size_t elements = settings_.specimens_count / settings_.thread_count;
+		size_t rest = settings_.specimens_count % settings_.thread_count;
+
+		size_t start_index = 0;
+		size_t end_index = 0;
+
+		std::vector<std::thread> threads;
+
+		while (end_index < settings_.specimens_count)
+		{
+			end_index += elements;
+			if (rest != 0)
+			{
+				end_index++;
+				rest--;
+			}
+
+			threads.push_back(std::thread(single_mutate, start_index, end_index));
+
+			start_index += elements;
+		}
+
+		size_t threads_count = threads.size();
+		for (size_t i = 0; i < threads_count; ++i)
+		{
+			threads[i].join();
 		}
 	}
 
