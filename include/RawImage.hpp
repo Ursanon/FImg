@@ -13,7 +13,8 @@ namespace bk
 	class RawImage
 	{
 	public:
-		static_assert(std::is_base_of<Color, TColor>::value, "TColor must inherit from bk::Color");
+		//static_assert(std::is_base_of<Color, TColor>::value, "TColor must inherit from bk::Color");
+
 		RawImage();
 		RawImage(const int& width, const int& height);
 		virtual ~RawImage();

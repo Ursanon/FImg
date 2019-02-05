@@ -7,16 +7,17 @@ namespace bk
 {
 	struct Color
 	{
+		virtual void fill_with_generator(std::mt19937& generator) = 0;
 	};
 
 	struct GreyscaleColor : Color
 	{
-		void combine(const GreyscaleColor& rhs)
+		virtual void combine(const GreyscaleColor& rhs)
 		{
 			this->greyscale = (this->greyscale + rhs.greyscale) >> 1;
 		}
 
-		void fill_with_generator(std::mt19937& generator)
+		virtual void fill_with_generator(std::mt19937& generator) override
 		{
 			greyscale = generator() & 255;
 		}
@@ -47,7 +48,7 @@ namespace bk
 			this->b = (this->b + rhs.b) >> 1;
 		}
 
-		void fill_with_generator(std::mt19937& generator)
+		virtual void fill_with_generator(std::mt19937& generator) override
 		{
 			r = generator() & 255;
 			g = generator() & 255;
