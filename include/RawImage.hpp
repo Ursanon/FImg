@@ -5,7 +5,8 @@
 #include <stdexcept>
 #include <type_traits>
 
-#include "Color.hpp"
+#include "GreyscaleColor.hpp"
+#include "RGBColor.hpp"
 
 namespace bk
 {
@@ -13,8 +14,6 @@ namespace bk
 	class RawImage
 	{
 	public:
-		//static_assert(std::is_base_of<Color, TColor>::value, "TColor must inherit from bk::Color");
-
 		RawImage();
 		RawImage(const int& width, const int& height);
 		virtual ~RawImage();
@@ -130,7 +129,12 @@ namespace bk
 			return false;
 		}
 
-		fwrite(image_, sizeof(TColor), size_, file);
+		size_t element_size = sizeof(*image_->get_data());
+		for (size_t i = 0; i < size_; ++i)
+		{
+			fwrite((image_ + i)->get_data(), element_size, 1, file);
+		}
+
 		fclose(file);
 
 		return true;
@@ -161,7 +165,11 @@ namespace bk
 			return false;
 		}
 
-		fread(image_, sizeof(TColor), size_, file);
+		size_t element_size = sizeof(*image_->get_data());
+		for (size_t i = 0; i < size_; ++i)
+		{
+			fread((image_ + i)->get_data(), element_size, 1, file);
+		}
 
 		fclose(file);
 

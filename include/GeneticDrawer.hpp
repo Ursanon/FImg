@@ -65,8 +65,8 @@ namespace bk
 		const RawImage<TColor>* target_;
 	};
 
-	typedef bk::GeneticDrawer<bk::RGBColor> RGBGeneticDrawer;
-	typedef bk::GeneticDrawer<bk::GreyscaleColor> GreyscaleGeneticDrawer;
+	typedef GeneticDrawer<RGBColor> RGBGeneticDrawer;
+	typedef GeneticDrawer<GreyscaleColor> GreyscaleGeneticDrawer;
 
 	template<typename TColor>
 	void GeneticDrawer<TColor>::start()
@@ -147,7 +147,8 @@ namespace bk
 				size_t size = target_->get_size();
 				for (size_t j = 0; j < size; ++j)
 				{
-					diff += TColor::compare(specimens_[i]->get_pixel(j), target_->get_pixel(j));
+					auto t = specimens_[i]->get_pixel(j);
+					diff += t.compare(target_->get_pixel(j));
 				}
 
 				rating_[i].index = i;
@@ -215,7 +216,7 @@ namespace bk
 						size_t pixel_y = start_x + k;
 
 						TColor pixel_color = parentImage->get_pixel(pixel_x, pixel_y);
-						specimens_[i]->set_pixel(pixel_x, pixel_y, TColor::peek_combined(pixel_color, new_color));
+						specimens_[i]->set_pixel(pixel_x, pixel_y, (pixel_color.peek_combined(new_color)));
 					}
 				}
 			}
@@ -263,6 +264,7 @@ namespace bk
 			specimens_[i]->copy_pixels_from(*current_bests_[parent], part_gene_size, rest_gene_size);
 		}
 	}
+
 	template<typename TColor>
 	void GeneticDrawer<TColor>::save_best_specimen(const uint64_t& current_generation)
 	{
