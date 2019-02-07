@@ -24,42 +24,54 @@ struct Arguments
 	std::string output_dir;
 };
 
-bool argument_exists(char ** begin, char ** end, const std::string& option)
+template <typename T>
+bool is_argument_present(const char **begin, const char **end, std::initializer_list<T> args)
 {
-	return std::find(begin, end, option) != end;
+	for (auto&& arg : args)
+	{
+		if (std::find(begin, end, arg) != end)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
-//unsigned int parse_numberic_argument(char* begin)
-//{
-//	char** end = &begin;
-//	while (*end++);
-//
-//	return strtoul(begin, end, 10);
-//}
-
-Arguments collect_arguments(int argc, char* args[])
+InputFormat parse_format(const char* arg)
 {
-	if (argc < 7)
+	if (arg == "-g")
 	{
-		printf("\n!! wrong args !!\n");
-		throw;
+		return InputFormat::Greyscale;
+	}
+	else if (arg == "-rgb")
+	{
+		return InputFormat::RGB24;
+	}
+
+	throw std::exception("Can't parse input format.");
+}
+
+Arguments parse_arguments(const int argc, const char* args[])
+{	
+	if (argc < 8)
+	{
+		printf("\n Check your arguments\n");
+
+		throw std::exception("Some of arguments missing.");
 	}
 
 	Arguments arguments;
-	
-	arguments.input_format = (argument_exists(args, args + argc, "-g")) 
-		? InputFormat::Greyscale 
-		: InputFormat::RGB24;
 
-	arguments.input_path = args[1];
-	arguments.output_dir = args[2];
-
-	arguments.specimens_count = strtoul(args[3], 0, 10);
-	arguments.parents_count = strtoul(args[4], 0, 10);
-	arguments.save_interval = strtoul(args[5], 0, 10);
-	arguments.width = strtoul(args[6], 0, 10);
-	arguments.height = strtoul(args[7], 0, 10);
-	arguments.threads = strtoul(args[8], 0, 10);
+	arguments.input_format = parse_format(args[1]);
+	arguments.input_path = args[2];
+	arguments.output_dir = args[3];
+	arguments.specimens_count = strtoul(args[4], 0, 10);
+	arguments.parents_count = strtoul(args[5], 0, 10);
+	arguments.save_interval = strtoul(args[6], 0, 10);
+	arguments.width = strtoul(args[7], 0, 10);
+	arguments.height = strtoul(args[8], 0, 10);
+	arguments.threads = strtoul(args[9], 0, 10);
 
 	return arguments;
 }
@@ -84,9 +96,39 @@ void start_drawing(Arguments args)
 	drawer.start();
 }
 
-int main(int argc, char* argv[])
+void show_help()
 {
-	Arguments arguments = collect_arguments(argc, argv);
+	printf("\n==========\nGenetic Drawer\n==========\n");
+	printf("input parameters:\n");
+	printf("1st param: -g/-rgb");
+	printf("2nd param: input file path");
+	printf("3rd param: output directory");
+	printf("4th param: specimens count [unsigned int] > 0");
+	printf("5th param: parents count [unsigned int] > 0");
+	printf("6th param: output save interval [unsigned int] > 0");
+	printf("7th param: image with [unsigned int] > 0");
+	printf("8th param: image height [unsigned int] > 0");
+	printf("9th param: threads count [unsigned int] > 0");
+}
+
+int main(const int argc, const char* argv[])
+{
+	if (is_argument_present<std::string>(argv, (argv + argc), { "--help", "-h" }))
+	{
+		show_help();
+		return 0;
+	}
+
+	Arguments arguments;
+	try
+	{
+		arguments = parse_arguments(argc, argv);
+	}
+	catch (const std::exception& exception)
+	{
+		printf("%s", exception.what());
+		return -1;
+	}
 	
 	switch (arguments.input_format)
 	{
