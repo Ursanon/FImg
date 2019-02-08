@@ -1,28 +1,9 @@
 #include <string>
 #include <type_traits>
 
-#include "GeneticDrawer.hpp"
 #include "RawImage.hpp"
-
-enum InputFormat
-{
-	RGB24 = 0,
-	Greyscale = 1,
-};
-
-struct Arguments
-{
-	InputFormat input_format;
-	unsigned int specimens_count;
-	unsigned int parents_count;
-	unsigned int save_interval;
-	unsigned int threads;
-	unsigned int height;
-	unsigned int width;
-
-	std::string input_path;
-	std::string output_dir;
-};
+#include "Arguments.hpp"
+#include "GeneticDrawer.hpp"
 
 template <typename T>
 bool is_argument_present(const char **begin, const char **end, std::initializer_list<T> args)
@@ -38,49 +19,11 @@ bool is_argument_present(const char **begin, const char **end, std::initializer_
 	return false;
 }
 
-InputFormat parse_format(const char* arg)
-{
-	if (arg == "-g")
-	{
-		return InputFormat::Greyscale;
-	}
-	else if (arg == "-rgb")
-	{
-		return InputFormat::RGB24;
-	}
-
-	throw std::exception("Can't parse input format.");
-}
-
-Arguments parse_arguments(const int argc, const char* args[])
-{	
-	if (argc < 8)
-	{
-		printf("\n Check your arguments\n");
-
-		throw std::exception("Some of arguments missing.");
-	}
-
-	Arguments arguments;
-
-	arguments.input_format = parse_format(args[1]);
-	arguments.input_path = args[2];
-	arguments.output_dir = args[3];
-	arguments.specimens_count = strtoul(args[4], 0, 10);
-	arguments.parents_count = strtoul(args[5], 0, 10);
-	arguments.save_interval = strtoul(args[6], 0, 10);
-	arguments.width = strtoul(args[7], 0, 10);
-	arguments.height = strtoul(args[8], 0, 10);
-	arguments.threads = strtoul(args[9], 0, 10);
-
-	return arguments;
-}
-
 template <typename TColor, typename TColorData, typename TDrawer>
-void start_drawing(Arguments args)
+void start_drawing(bk::Arguments args)
 {
-	static_assert(std::is_base_of<bk::IColor<TColor, TColorData>, TColor>::value, "xD");
-	static_assert(std::is_base_of<bk::GeneticDrawer<TColor>, TDrawer>::value, "xD2");
+	static_assert(std::is_base_of<bk::IColor<TColor, TColorData>, TColor>::value, "TColor must derive from IColor interface");
+	static_assert(std::is_base_of<bk::GeneticDrawer<TColor>, TDrawer>::value, "TDrawer must derive from GeneticDrawer");
 
 	bk::RawImage<TColor>* image = new bk::RawImage<TColor>(args.width, args.height);
 	bool image_loaded = image->load_from_file(args.input_path.c_str(), args.width, args.height);
@@ -111,7 +54,7 @@ void show_help()
 	printf("9th param: threads count [unsigned int] > 0");
 }
 
-int main(const int argc, const char* argv[])
+int main(const int argc, const char** argv)
 {
 	if (is_argument_present<std::string>(argv, (argv + argc), { "--help", "-h" }))
 	{
@@ -119,10 +62,10 @@ int main(const int argc, const char* argv[])
 		return 0;
 	}
 
-	Arguments arguments;
+	bk::Arguments arguments;
 	try
 	{
-		arguments = parse_arguments(argc, argv);
+		arguments = bk::Arguments::parse_arguments(argc, argv);
 	}
 	catch (const std::exception& exception)
 	{
@@ -132,15 +75,11 @@ int main(const int argc, const char* argv[])
 	
 	switch (arguments.input_format)
 	{
-	case InputFormat::Greyscale:
-		{
+	case bk::Arguments::InputFormat::Greyscale:
 			start_drawing<bk::GreyscaleColor, bk::GreyscaleColorData, bk::GreyscaleGeneticDrawer>(arguments);
-		}
 		break;
-	case InputFormat::RGB24:
-		{
+	case bk::Arguments::InputFormat::RGB24:
 			start_drawing<bk::RGBColor, bk::RGBColorData, bk::RGBGeneticDrawer>(arguments);
-		}
 		break; 
 	}
 

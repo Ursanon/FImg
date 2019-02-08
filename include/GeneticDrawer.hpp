@@ -41,7 +41,7 @@ namespace bk
 	public:
 		virtual void start();
 
-		GeneticDrawer(const RawImage<TColor>& target, const Settings settings, const char* output_dir);
+		GeneticDrawer(const RawImage<TColor>& target, const Settings settings, std::string output_dir);
 		virtual ~GeneticDrawer();
 	protected:
 
@@ -92,7 +92,7 @@ namespace bk
 	}
 
 	template<typename TColor>
-	GeneticDrawer<TColor>::GeneticDrawer(const RawImage<TColor>& target, const Settings settings, const char * output_dir)
+	GeneticDrawer<TColor>::GeneticDrawer(const RawImage<TColor>& target, const Settings settings, std::string output_dir)
 		: target_(&target),
 		output_dir_(output_dir),
 		settings_(settings)
