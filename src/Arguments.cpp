@@ -4,11 +4,11 @@ namespace bk
 {
 	Arguments::InputFormat Arguments::parse_format(const char* arg)
 	{
-		if (arg == "-g")
+		if (strcmp(arg, "-g") == 0)
 		{
 			return InputFormat::Greyscale;
 		}
-		else if (arg == "-rgb")
+		else if (strcmp(arg, "-rgb") == 0)
 		{
 			return InputFormat::RGB24;
 		}
