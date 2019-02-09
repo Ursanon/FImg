@@ -1,12 +1,12 @@
 # genetic-drawer
 
 ## demo
-| Generation: | 100 ~6 [s] | 300  | 1000 | 2000 | 3700 ~5 [min] |
+| Generation:  /target | 100 ~6 [s] | 300  | 1000 | 2000 | 3700 ~5 [min] |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-|   | ![gen 100](resources/100.png)  | ![gen 300](resources/300.png) | ![gen 1000](resources/1000.png) | ![gen 2000](resources/2000.png) | ![gen 3700](resources/3700.png) |
+| ![target](resources/target.png) | ![gen 100](resources/100.png)  | ![gen 300](resources/300.png) | ![gen 1000](resources/1000.png) | ![gen 2000](resources/2000.png) | ![gen 3700](resources/3700.png) |
 
 ### generated with
-`🅐 = -g`  
+`🅐 = -rgb`  
 `🅓 = 330`  
 `🅔 = 2`  
 
