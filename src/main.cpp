@@ -43,15 +43,15 @@ void show_help()
 {
 	printf("\n==========\nGenetic Drawer\n==========\n");
 	printf("input parameters:\n");
-	printf("1st param: -g/-rgb");
-	printf("2nd param: input file path");
-	printf("3rd param: output directory");
-	printf("4th param: specimens count [unsigned int] > 0");
-	printf("5th param: parents count [unsigned int] > 0");
-	printf("6th param: output save interval [unsigned int] > 0");
-	printf("7th param: image with [unsigned int] > 0");
-	printf("8th param: image height [unsigned int] > 0");
-	printf("9th param: threads count [unsigned int] > 0");
+	printf("1st param: -g/-rgb\n");
+	printf("2nd param: input file path\n");
+	printf("3rd param: output directory\n");
+	printf("4th param: specimens count [unsigned int] > 0\n");
+	printf("5th param: parents count [unsigned int] > 0\n");
+	printf("6th param: output save interval [unsigned int] > 0\n");
+	printf("7th param: image with [unsigned int] > 0\n");
+	printf("8th param: image height [unsigned int] > 0\n");
+	printf("9th param: threads count [unsigned int] > 0\n");
 }
 
 int main(const int argc, const char** argv)
