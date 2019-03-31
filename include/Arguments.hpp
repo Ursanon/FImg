@@ -6,7 +6,7 @@
 
 namespace bk
 {
-	struct Arguments
+	class Arguments
 	{
 	public:
 		enum InputFormat
@@ -28,6 +28,21 @@ namespace bk
 		std::string output_dir;
 
 		static Arguments parse_arguments(const int argc, const char** args);
+		
+		template <typename T>
+		static bool is_argument_present(const char **begin, const char **end, std::initializer_list<T> args)
+		{
+			for (auto&& arg : args)
+			{
+				if (std::find(begin, end, arg) != end)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 	private:
 		static InputFormat parse_format(const char* arg);
 	};

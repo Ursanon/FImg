@@ -5,20 +5,6 @@
 #include "Arguments.hpp"
 #include "GeneticDrawer.hpp"
 
-template <typename T>
-bool is_argument_present(const char **begin, const char **end, std::initializer_list<T> args)
-{
-	for (auto&& arg : args)
-	{
-		if (std::find(begin, end, arg) != end)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
 template <typename TColor, typename TColorData, typename TDrawer>
 void start_drawing(bk::Arguments args)
 {
@@ -37,6 +23,8 @@ void start_drawing(bk::Arguments args)
 	TDrawer drawer(*image, settings, args.output_dir.c_str());
 
 	drawer.start();
+
+	delete image;
 }
 
 void show_help()
@@ -56,7 +44,7 @@ void show_help()
 
 int main(const int argc, const char** argv)
 {
-	if (is_argument_present<std::string>(argv, (argv + argc), { "--help", "-h" }))
+	if (bk::Arguments::is_argument_present<std::string>(argv, (argv + argc), { "--help", "-h" }))
 	{
 		show_help();
 		return 0;

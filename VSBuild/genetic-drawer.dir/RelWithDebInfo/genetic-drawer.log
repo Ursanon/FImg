@@ -1,0 +1,4 @@
+﻿  main.cpp
+e:\code\genetic-drawer\src\main.cpp(74): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'std::string'
+e:\code\genetic-drawer\src\main.cpp(75): warning C4477: 'printf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'std::string'
+  genetic-drawer.vcxproj -> E:\Code\genetic-drawer\VSBuild\RelWithDebInfo\genetic-drawer.exe
